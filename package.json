@@ -1,8 +1,8 @@
 {
   "name": "marimo",
   "version": "0.0.1",
-  "description": "web testing framework for mocha",
-  "main": "index.js",
+  "description": "web hosting framework for mocha",
+  "main": "lib/index.js",
   "directories": {
     "doc": "docs",
     "test": "test"
