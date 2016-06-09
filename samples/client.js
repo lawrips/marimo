@@ -1,4 +1,4 @@
-'use stict';
+'use strict';
 
 const http = require('request'),
     WebSocket = require('ws');
