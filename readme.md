@@ -5,7 +5,7 @@ marimo.listen(10001);
 ```
 
 # Features
-Marimo is a framework that hosts your mocha tests in a web sockets based framework. This enables you to run your tests remotely and get the results over a web socket. These results can then be displayed real time in a website, app or any other framework. 
+Marimo is a framework that hosts your mocha (http://mochajs.org/) tests in a web sockets based framework. This enables you to run your tests remotely and get the results over a web socket. These results can then be displayed real time in a website, app or any other framework. 
 * Standard web sockets support
 * Security via TLS
 * Optional token based authentication (handshake over HTTP(S) and initialize over web sockets)
@@ -35,7 +35,7 @@ And results will be streamed
 ```
 npm --save install marimo should mocha
 ```
-2. Copy the above server code and save in a file (e.g. server.js). This file can also be found [here]: 
+2. Copy the above server code and save in a file (e.g. server.js). This file can also be found [here](https://github.com/lawrips/marimo/blob/master/samples/server.js): 
 3. Create a sub directory, called “resources” and create a mocha test. For example:
 
 ```
@@ -62,7 +62,7 @@ node server.js
 ## Client
 Connect to marimo and run the above test you just created:
 ### Node.Js
-1. . Create a client to talk to marimo. This can be copied from the file client_noauth_.js found [here] (also pasted below)
+1. . Create a client to talk to marimo. This can be copied from the file client_noauth_.js found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js) (also pasted below)
 
 ```
 'use stict';
@@ -92,9 +92,10 @@ npm install ws
 node client.js
 ```
 
-3. See the results:
+3. See the results (in this case 3 lines):
 
 ```
+{"availableTests":["developer","flow","geocoder","simple"]}
 ✓ Test passed! [1 / 1]: "a simple test" (duration 2 ms)
 {"count":1,"duration":2,"passed":1,"failed":0}
 ```
@@ -144,7 +145,7 @@ A successful handshake will respond with a token, which should then be passed in
 [ws://server:port/?token={token-from-previous-step}]
 ```
 
-The following shows how to connect to marimo when auth is enabled (sample is also available [here]):
+The following shows how to connect to marimo when auth is enabled (sample is also available [here](https://github.com/lawrips/marimo/blob/master/samples/client.js)):
 
 ### Node.Js
 
@@ -195,6 +196,10 @@ Once a web socket connection has been made, simply send the following to initiat
 });
 ```
 
-The parameter ‘test’ will be the name of your test file to run. 
+The parameter ‘test’ will be the name of your test file to run. When you first connect to marimo, it will return back an object with the available tests that have been loaded. For example:
+
+```
+{"availableTests":["simple","complicated","alittleofboth"]}
+``` 
 
 The default reporter should be ‘basic’. Custom reporters can be created by contributing to the marimo git repo. 
