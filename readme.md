@@ -5,9 +5,8 @@ marimo.listen(10001);
 ```
 
 # Features
-Marimo is a framework that hosts your mocha (http://mochajs.org/) tests in a web sockets based framework. This enables you to run your tests remotely and get the results over a web socket. These results can then be displayed real time in a website, app or any other framework. 
-* Standard web sockets support
-* Security via TLS
+Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to run remotely over a web socket. The results can then be displayed real time in a website, app or any other framework. Features include:
+* Standard web sockets support, accessible via a browser, another node app or any other web socket client
 * Optional token based authentication (handshake over HTTP(S) and initialize over web sockets)
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
@@ -199,7 +198,15 @@ Once a web socket connection has been made, simply send the following to initiat
 The parameter ‘test’ will be the name of your test file to run. When you first connect to marimo, it will return back an object with the available tests that have been loaded. For example:
 
 ```
-{"availableTests":["simple","complicated","alittleofboth"]}
+{
+	"availableTests":{
+		"simple":
+		{
+			"file":"resources/simple",
+			"description":"my amazing test suite"
+		}
+	}
+}
 ``` 
 
 The default reporter should be ‘basic’. Custom reporters can be created by contributing to the marimo git repo. 
