@@ -9,7 +9,7 @@ http('http://localhost:10001/auth', {
         authorization: 'basic a-random-password'
     }}, (err, response, body) => {
         if (err) {
-            console.dir(response);
+            console.dir(err);
             process.exit(0);
         }
         console.log(`auth success, token: [${body}]`);
