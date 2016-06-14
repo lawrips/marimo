@@ -3,6 +3,10 @@
   "version": "0.3.2",
   "description": "web hosting framework for mocha",
   "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lawrips/marimo.git"
+  },
   "directories": {
     "doc": "docs",
     "test": "test"
