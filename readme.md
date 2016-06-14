@@ -8,6 +8,7 @@ marimo.listen(10001);
 Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to run remotely over a web socket. The results can then be displayed real time in a website, app or any other framework. Features include:
 * Standard web sockets support, accessible via a browser, another node app or any other web socket client
 * Optional token based authentication (handshake over HTTP(S) and initialize over web sockets)
+* Encryption via TLS / HTTPS
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
 
