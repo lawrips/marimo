@@ -1,6 +1,6 @@
 {
   "name": "marimo",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "web hosting framework for mocha",
   "main": "lib/index.js",
   "repository": {
@@ -23,7 +23,9 @@
     "uuid": "^2.0.2",
     "ws": "^1.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "proxyquire": "^1.7.9"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
