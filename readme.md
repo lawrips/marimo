@@ -41,8 +41,7 @@ npm --save install marimo should mocha
 ```
 'use strict';
 
-const should = require('should'),
-	mocha = require('mocha');
+const should = require('should');
 
 describe('my amazing test suite', () => {
 	it('a simple test', (done) => {
@@ -101,8 +100,38 @@ node client.js
 ```
 
 ### Browser
-Example coming soon
+```
+<script type="text/javascript">
+	// on page load
+	socket = new WebSocket("wss://mymarimoserver");
+	var availableTests = null;
 
+	// open a socket
+	socket.onopen = function (event) {
+		// register an event handler for new messages
+		socket.onmessage = function (event) {			
+			if (!availableTests) {
+				// this is the first web socket message that comes back on connect - the set of available tests  
+				availableTests = JSON.parse(event.data).availableTests;
+				// populate your UX with available tests (e.g. a drop down list)
+			}
+			else {
+				// any subsequent messages are the actual test results themselves (event.data)
+				// update your UX test results with this message
+			}
+		};
+	};
+
+    // Create a handler for a 'run test' button
+    $('#mybutton').click(function() {
+        socket.send(JSON.stringify({
+            // get the test that was selected
+			test: mySelectedTest,			
+            reporter: 'basic'
+        }))
+    });
+</script> 
+```
 
 # Docs
 ## Startup
