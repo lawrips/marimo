@@ -15,12 +15,10 @@ Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to 
 Once connected to a running marimo server, it’s as easy as sending a message over a web socket to initiate the test:
 
 ```
-ws.send(JSON.stringify(
-	{
-		reporter: 'basic',
-		test: 'simple'
-	})
-);
+ws.send(JSON.stringify({
+  reporter: 'basic',
+  test: 'simple'
+}));
 ```
 
 And results will be streamed 
@@ -44,12 +42,12 @@ npm --save install marimo should mocha
 const should = require('should');
 
 describe('my amazing test suite', () => {
-	it('a simple test', (done) => {
-		var a = 2;
-		var b = 2;
-		a.should.be.equal(b);            
-		done();
-	});
+  it('a simple test', (done) => {
+    var a = 2;
+    var b = 2;
+    a.should.be.equal(b);            
+    done();
+  });
 });
 
 ```
@@ -71,16 +69,16 @@ const WebSocket = require('ws');
 var ws = new WebSocket(`ws://localhost:10001`);
 
 ws.on('open', () => {
-	ws.send(JSON.stringify(
-		{
-			reporter: 'basic',
-			test: 'simple'
-		})
-	);
+  ws.send(JSON.stringify(
+    {
+      reporter: 'basic',
+      test: 'simple'
+    })
+  );
 });
 
 ws.on('message', (data, flags) => {
-	console.log(data);
+  console.log(data);
 });	
 ```
 
@@ -102,34 +100,34 @@ node client.js
 ### Browser
 ```
 <script type="text/javascript">
-	// on page load
-	socket = new WebSocket("wss://mymarimoserver");
-	var availableTests = null;
+  // on page load
+  socket = new WebSocket("wss://mymarimoserver");
+  var availableTests = null;
 
-	// open a socket
-	socket.onopen = function (event) {
-		// register an event handler for new messages
-		socket.onmessage = function (event) {			
-			if (!availableTests) {
-				// this is the first web socket message that comes back on connect - the set of available tests  
-				availableTests = JSON.parse(event.data).availableTests;
-				// populate your UX with available tests (e.g. a drop down list)
-			}
-			else {
-				// any subsequent messages are the actual test results themselves (event.data)
-				// update your UX test results with this message
-			}
-		};
-	};
+  // open a socket
+  socket.onopen = function (event) {
+    // register an event handler for new messages
+    socket.onmessage = function (event) {			
+      if (!availableTests) {
+        // this is the first web socket message that comes back on connect - the set of available tests  
+        availableTests = JSON.parse(event.data).availableTests;
+        // populate your UX with available tests (e.g. a drop down list)
+      }
+      else {
+        // any subsequent messages are the actual test results themselves (event.data)
+        // update your UX test results with this message
+      }
+    };
+  };
 
-    // Create a handler for a 'run test' button
-    $('#mybutton').click(function() {
-        socket.send(JSON.stringify({
-            // get the test that was selected
-			test: mySelectedTest,			
-            reporter: 'basic'
-        }))
-    });
+  // Create a handler for a 'run test' button
+  $('#mybutton').click(function() {
+    socket.send(JSON.stringify({
+      // get the test that was selected
+      test: mySelectedTest,			
+      reporter: 'basic'
+    }))
+  });
 </script> 
 ```
 
@@ -147,18 +145,16 @@ marimo.listen(10001);
 Startup options include:
 
 ```
-let marimo = new Marimo(
-	{
-		 // optional password for an HTTP auth handshake. Will return a token which can be passed to the web socket (default is disabled)
-		auth: ‘my-random-password’,
+let marimo = new Marimo({
+  // optional password for an HTTP auth handshake. Will return a token which can be passed to the web socket (default is disabled)
+  auth: ‘my-random-password’,
 
-		// optional path to test files (default is ‘./resources’)		
-		directory: ‘./mypath’, 
+  // optional path to test files (default is ‘./resources’)		
+  directory: ‘./mypath’, 
 
-		// optional timeout in milliseconds (default is 10000)
-		timeout: 2000 
-	}
-);
+  // optional timeout in milliseconds (default is 10000)
+  timeout: 2000 
+});
 ```
 ## Authorization
 If a password is supplied in the constructor (previous step), this requires an authorization handshake to take place over HTTP before the web socket can be established. The HTTP auth request takes the following format:
@@ -182,32 +178,34 @@ The following shows how to connect to marimo when auth is enabled (sample is als
 'use strict';
 
 const http = require('request'),
-	WebSocket = require('ws');
+    WebSocket = require('ws');
 
-http('http://localhost:10001/auth', {
-	method: 'get',
-	headers: {
-		authorization: 'basic a-random-password'
-	}}, (err, response, body) => {
-		if (err) {
-			console.dir(response);
-			process.exit(0);
-		}
-		console.log(`auth success, token: [${body}]`);
-		var ws = new WebSocket(`ws://localhost:10001/?token=${body}`);
+http('http://localhost:10001/auth', 
+{
+  method: 'get',
+  headers: {
+    authorization: 'basic a-random-password'
+  }
+}, (err, response, body) => {
+  if (err) {
+      console.dir(response);
+      process.exit(0);
+  }
+  console.log(`auth success, token: [${body}]`);
+  var ws = new WebSocket(`ws://localhost:10001/?token=${body}`);
 
-		ws.on('open', () => {
-			ws.send(JSON.stringify(
-				{
-					reporter: 'basic',
-					test: 'simple'
-				})
-			);
-		});
+  ws.on('open', () => {
+    ws.send(JSON.stringify(
+      {
+        reporter: 'basic',
+        test: 'simple'
+      })
+    );
+  });
 
-		ws.on('message', (data, flags) => {
-			console.log(data);
-		});
+  ws.on('message', (data, flags) => {
+      console.log(data);
+  });
 });
 ```
 
@@ -215,13 +213,13 @@ http('http://localhost:10001/auth', {
 Once a web socket connection has been made, simply send the following to initiate a test:
 
 ```
- ws.on('open', () => {
-	ws.send(JSON.stringify(
-		{
-			reporter: 'basic',
-			test: 'simple'
-		})
-	);
+ws.on('open', () => {
+  ws.send(JSON.stringify(
+    {
+      reporter: 'basic',
+      test: 'simple'
+    })
+  );
 });
 ```
 
@@ -229,14 +227,20 @@ The parameter ‘test’ will be the name of your test file to run. When you fir
 
 ```
 {
-	"availableTests":{
-		"simple":
-		{
-			"file":"resources/simple",
-			"description":"my amazing test suite"
-		}
-	}
+  "availableTests":
+  {
+    "simple":
+    {
+      "file":"resources/simple",
+      "description":"my amazing test suite"
+    }
+  }
 }
 ``` 
 
-The default reporter should be ‘basic’. Custom reporters can be created by contributing to the marimo git repo. 
+## Reporters
+Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic’. Custom reporters can be created by contributing to the marimo git repo.
+
+Included reporters will be added regularly. Currently supported reporters include:
+* basic
+* json-stream
