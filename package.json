@@ -1,6 +1,6 @@
 {
   "name": "marimo",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "web hosting framework for mocha",
   "main": "lib/index.js",
   "repository": {
