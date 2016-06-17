@@ -91,11 +91,12 @@ describe('marimo unit tests', () => {
         done();
     });
 
-    it('constructor with timeout and directory should set options', (done) => {        
+    it('constructor with timeout, directory and env should set options', (done) => {        
         var Marimo = proxyquire('../lib/index', stubs);
         var directory = 'anotherdir';
-        marimo = new Marimo({timeout: 20000, directory: './' + directory});
+        marimo = new Marimo({timeout: 20000, directory: './' + directory, env: false});
         marimo.timeout.should.equal(20000);
+        marimo.env.should.equal(false);
         done();
     });
 

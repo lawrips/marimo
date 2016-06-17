@@ -154,6 +154,9 @@ let marimo = new Marimo({
 
   // optional timeout in milliseconds (default is 10000)
   timeout: 2000 
+
+  // optional parameter which if set to false, will ignore environment variables passed to tests (default is true)
+  env: false 
 });
 ```
 ## Authorization
@@ -244,3 +247,36 @@ Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic
 Included reporters will be added regularly. Currently supported reporters include:
 * basic
 * json-stream
+
+## Sending parameters to tests
+Optional parameters can be sent over the web socket to be passed to the test at runtime. Here's an example:  
+
+```
+ws.send(JSON.stringify(
+  {
+    reporter: 'basic',
+    test: 'simple'
+    env: {
+      'appId': '1234', 
+      'appName': 'marimo'
+    }
+  })
+);
+``` 
+
+In order to access these parameters within your mocha test, use process.env. The environment variable names will be a combination of the testname and envirnoment variable name (testname_envname). So the above example would be:
+
+```
+let appId = process.env['simple_appId'] || 'mydefaultid';
+let appName = process.env['simple_appName'] || 'mydefaultname';
+```
+
+Note that this feature can be disabled entirely be passing a variable to the marimo constructor:
+```
+let marimo = new Marimo({
+  // optional parameter which if set to false, will ignore environment variables passed to tests (default is true)
+  env: false 
+});
+```
+
+
