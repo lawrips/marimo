@@ -4,7 +4,8 @@ const should = require('should'),
     proxyquire = require('proxyquire'),
     debug = require('debug')('marimo-test');
 
-let filename = 'test.js';
+let filename = 'simple.js';
+let testname = filename.slice(0,filename.length-3);
 
 var stubs = { 
     fs: {
@@ -15,6 +16,11 @@ var stubs = {
                 }
             }
         }
+    },
+    './reporters/basic': function(runner, ws, envKeys) {
+        return {
+            // no need to do anything yet
+        }                
     },
     mocha: function() {
         return {
@@ -61,27 +67,52 @@ var stubs = {
         }
     },
     ws: {
-        on: function(event) {
-            if (event === 'message') {
-                debug('got stub ws message');
-            }
-        },
         Server: function (options) {
             return { 
-                on: function(event, callback) {
+                onConnection: [],
+                onError: [],
+                
+                on: function (event, callback) {
                     if (event === 'connection') {
-                        debug('got stub wss connection');
+                        debug('registering server.on(connection) callback');
+                        this.onConnection.push(callback);
                     }
                     else if (event === 'error') {
-                        debug('got stub wss error');
+                        debug('registering server.on(error) callback');
+                        this.onError.push(callback);
                     }
                 }
             }
         }
+    },
+    websocket : {
+        lastSentMessage: '',
+        onMessage: [],
+        on: function(event, callback) {
+            if (event === 'message') {
+                debug('client registering websocket.on(message) callback');
+                this.onMessage.push(callback);
+            }
+        },
+        send: function(message) {
+            debug('client sending message over web socket: ' + message);
+            this.lastSentMessage = message;
+        }
     }
 };
 
-var marimo = null;
+let success = false;
+stubs.mocha.Runner = function(suite) {
+    return {
+        run: function() {
+            debug('running the test!!!')
+            success = true;
+        }
+    }                
+};
+
+
+let marimo = null;
 
 describe('marimo unit tests', () => {
     it('create constructor', (done) => {        
@@ -117,15 +148,44 @@ describe('marimo unit tests', () => {
         done();
     });
 
-    it('call listen and ensure port is returned', (done) => {        
+    it('call listen to setup the server and ensure port is returned', (done) => {        
         // create a stubbed web server
         marimo.listen(10000, (err, port) => {
             should.not.exist(err);
             port.should.be.equal(10000);
+            // a callback to be notified of any incoming websocket connections will now be registered in the array marimo.wss.onConnection
         });
         
         done();
     });
+
+    it('simulate a connecting client and make sure we recieve a list of available tests', (done) => {        
+        // trigger the callback, which woudl have been called if an incoming websocket were detected
+        marimo.wss.onConnection[0](stubs.websocket);
+        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
+        let expectedJson = {"availableTests":{}};
+        expectedJson.availableTests[testname] = {"file":"resources/" + testname};
+        stubs.websocket.lastSentMessage.should.be.equal(JSON.stringify(expectedJson));
+
+        done();
+        
+    });
+
+    it('simulate a request to run a test, should result in success', (done) => {        
+        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname}));
+        success.should.be.equal(true);
+        done();
+        
+    });
+
+    it('running a test that does not exist should result in a 404', (done) => {        
+        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":'notesthere'}));
+        stubs.websocket.lastSentMessage.should.be.equal(JSON.stringify({statusCode:404}));
+        done();        
+    });
+
 });
 
 
