@@ -1,0 +1,100 @@
+<!-- EXAMPLE HTML PAGE WHICH CONNECTS TO MARIMO AND RUNS A TEST -->
+
+<!-- jquery not a must have, but pretty handy -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+
+<div>
+	<span>
+        <h2>Test Suite</h2>
+    </span>
+</div>
+<div>
+	<span>
+        Choose a test:
+        </span>
+    <span>
+        <select id="testSelection">
+        </select>
+    </span>
+</div>
+<br>
+<div>
+	<span>
+        Choose a reporter:
+    </span>
+	<span>
+        <select id="reporterSelection">
+            <option value="basic">basic</option>
+            <option value="json-stream"/>json-stream</option>
+            <option value="landing"/>landing</option>
+        </select>
+    </span>
+</div>
+<br>
+<div>
+    <input id="testButton" type="submit" value="Run Test" />
+</div>
+<br>
+<div>
+	<span>
+        Test results:
+    </span>
+	<br>
+	<textarea rows="10" cols="80" id="testResults">
+Your test results will appear here
+    </textarea>
+</div>
+
+<script type="text/javascript">
+    // connect to your server running marimo (in this case localhost and port 10001)
+    socket = new WebSocket("ws://localhost:10001");
+    var availableTests = null;
+	
+    // open the socket connection
+    socket.onopen = function (event) {				
+        // raise events on incoming messages
+        socket.onmessage = function (event) {
+            // the first message we receive back is the list of available tests
+            if (!availableTests) {
+                // set this - subsequent messages will be the test results themselves  
+                availableTests = JSON.parse(event.data).availableTests;
+                // populate your UX with available tests (e.g. a drop down list)
+                $('#testSelection').empty();
+                Object.keys(availableTests).forEach((test) => { 
+                    $("#testSelection").append(
+                        $("<option>").val(test).html(availableTests[test].description)
+                    );
+                });
+            }
+            else {
+                // any subsequent messages are the actual test results themselves - now update the UX with the results
+                if (event.data.indexOf('&#8226;') > -1) {
+                    // the presence of this unicode character tells us it's a "landing strip" reporter - overwrite the UX
+                    $('#testResults').html( event.data );
+                }
+                else  {
+                    // all other tests can be appended
+                    $('#testResults').html($('#testResults').val() + "\n" + event.data );
+                }
+                $('#testResults').scrollTop($('#testResults')[0].scrollHeight);
+
+            }
+        };
+    };
+    socket.onerror = function (event) {				
+        $('#testResults').html( event.data );
+    }
+
+    // So we can run tests
+    $('#testButton').click(function() {
+        // reset the results textbox        
+        $('#testResults').html(''); 
+
+        // run the test!
+        socket.send(JSON.stringify({
+                // get the test that was selected
+                test: $('#testSelection').find(":selected").val(),			
+                reporter: $('#reporterSelection').find(":selected").val()
+        }))
+    }); 
+</script>
