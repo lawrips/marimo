@@ -1,6 +1,6 @@
 {
   "name": "marimo",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "web hosting framework for mocha",
   "keywords":["mocha", "web sockets", "server", "websockets", "web", "ws", "hosted"],
   "main": "lib/index.js",
