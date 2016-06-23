@@ -102,6 +102,7 @@ var stubs = {
 };
 
 let success = false;
+let env; 
 stubs.mocha.Runner = function(suite) {
     return {
         run: function() {
@@ -177,6 +178,24 @@ describe('marimo unit tests', () => {
         success.should.be.equal(true);
         done();
         
+    });
+
+    it('simulate a request to run a test, sending some environment variables', (done) => {        
+        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": {"myenvval":"myenvkey"}}));
+        'myenvkey'.should.be.equal(process.env[testname + '_' + 'myenvval']);
+        done();        
+    });
+
+    it('simulate a request to run a test, sending some more complex environment variables', (done) => {        
+        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
+        let envObj = {"mystuff": 
+            [{"myenvval1":"myenvkey1"},
+            {"myenvval2":"myenvkey2"}]
+        };
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": envObj}));
+        JSON.stringify(envObj.mystuff).should.be.equal(process.env[testname + '_' + 'mystuff']);
+        done();        
     });
 
     it('running a test that does not exist should result in a 404', (done) => {        

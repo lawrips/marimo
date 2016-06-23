@@ -49,6 +49,7 @@ describe('my amazing test suite', () => {
     done();
   });
 });
+This file can also be found [here](https://github.com/lawrips/marimo/blob/master/samples/simple.js)
 
 ```
 4. You can now run the server:
@@ -98,6 +99,8 @@ node client.js
 ```
 
 ### Browser
+1. . Create a web based client to talk to marimo. This can be copied from the file browser.html found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.html) (also pasted below)
+
 ```
 <script type="text/javascript">
   // on page load
