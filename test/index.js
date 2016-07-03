@@ -95,7 +95,7 @@ var stubs = {
             }
         },
         send: function(message) {
-            debug('client sending message over web socket: ' + message);
+            debug('client sending message over WebSocket: ' + message);
             this.lastSentMessage = message;
         }
     }

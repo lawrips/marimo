@@ -5,14 +5,14 @@ marimo.listen(10001);
 ```
 
 # Features
-Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to run remotely over a web socket. The results can then be displayed real time in a website, app or any other framework. Features include:
-* Standard web sockets support, accessible via a browser, another node app or any other web socket client
-* Optional token based authentication (handshake over HTTP(S) and initialize over web sockets)
+Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to run remotely over a WebSocket. The results can then be displayed real time in a website, app or any other framework. Features include:
+* Standard WebSockets support, accessible via a browser, another node app or any other WebSocket client
+* Optional token based authentication (handshake over HTTP(S) and initialize over WebSocket)
 * Encryption via TLS / HTTPS
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
 
-Once connected to a running marimo server, it’s as easy as sending a message over a web socket to initiate the test:
+Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
 
 ```
 ws.send(JSON.stringify({
@@ -112,7 +112,7 @@ node client.js
     // register an event handler for new messages
     socket.onmessage = function (event) {			
       if (!availableTests) {
-        // this is the first web socket message that comes back on connect - the set of available tests  
+        // this is the first WebSocket message that comes back on connect - the set of available tests  
         availableTests = JSON.parse(event.data).availableTests;
         // populate your UX with available tests (e.g. a drop down list)
       }
@@ -149,7 +149,7 @@ Startup options include:
 
 ```
 let marimo = new Marimo({
-  // optional password for an HTTP auth handshake. Will return a token which can be passed to the web socket (default is disabled)
+  // optional password for an HTTP auth handshake. Will return a token which can be passed to the WebSocket (default is disabled)
   auth: ‘my-random-password’,
 
   // optional path to test files (default is ‘./resources’)		
@@ -163,14 +163,14 @@ let marimo = new Marimo({
 });
 ```
 ## Authorization
-If a password is supplied in the constructor (previous step), this requires an authorization handshake to take place over HTTP before the web socket can be established. The HTTP auth request takes the following format:
+If a password is supplied in the constructor (previous step), this requires an authorization handshake to take place over HTTP before the WebSocket can be established. The HTTP auth request takes the following format:
 
 ```
 Authorization: basic my-random-password
 GET /auth 
 ```
 
-A successful handshake will respond with a token, which should then be passed in the web socket connection setup:
+A successful handshake will respond with a token, which should then be passed in the WebSocket connection setup:
 
 ```
 [ws://server:port/?token={token-from-previous-step}]
@@ -216,7 +216,7 @@ http('http://localhost:10001/auth',
 ```
 
 ## Running Tests
-Once a web socket connection has been made, simply send the following to initiate a test:
+Once a WebSocket connection has been made, simply send the following to initiate a test:
 
 ```
 ws.on('open', () => {
@@ -253,7 +253,7 @@ Included reporters will be added regularly. Currently supported reporters includ
 * landing (new)
 
 ## Sending parameters to tests
-Optional parameters can be sent over the web socket to be passed to the test at runtime. Here's an example:  
+Optional parameters can be sent over the WebSocket to be passed to the test at runtime. Here's an example:  
 
 ```
 ws.send(JSON.stringify(
