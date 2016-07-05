@@ -88,6 +88,9 @@ var stubs = {
     websocket : {
         lastSentMessage: '',
         onMessage: [],
+        upgradeReq: {
+            url: ''
+        },
         on: function(event, callback) {
             if (event === 'message') {
                 debug('client registering websocket.on(message) callback');
@@ -176,6 +179,8 @@ describe('marimo unit tests', () => {
         // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
         stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname}));
         success.should.be.equal(true);
+        // reset success
+        success = false;
         done();
         
     });
@@ -195,6 +200,15 @@ describe('marimo unit tests', () => {
         };
         stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": envObj}));
         JSON.stringify(envObj.mystuff).should.be.equal(process.env[testname + '_' + 'mystuff']);
+        done();        
+    });
+
+    it('simulate a request to run in monitor mode (i.e. perpetually running)', (done) => {        
+        // set request params so that the monitor code path is triggered
+        stubs.websocket.upgradeReq.url = '/?monitor=true';
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname}));
+        success.should.be.equal(true);
+        // todo: trigger an array of connected websockets with a single test
         done();        
     });
 

@@ -11,6 +11,7 @@ Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to 
 * Encryption via TLS / HTTPS
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
+* (NEW) Tests can be run perpetually for system monitoring scenarios 
 
 Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
 
@@ -173,7 +174,7 @@ GET /auth
 A successful handshake will respond with a token, which should then be passed in the WebSocket connection setup:
 
 ```
-[ws://server:port/?token={token-from-previous-step}]
+ws://server:port/?token={token-from-previous-step}
 ```
 
 The following shows how to connect to marimo when auth is enabled (sample is also available [here](https://github.com/lawrips/marimo/blob/master/samples/client.js)):
@@ -283,4 +284,45 @@ let marimo = new Marimo({
 });
 ```
 
+## Monitoring style tests
+The above examples show tests which are run once. Marimo can also be used to run tests perpetually to be used for monitoring / alerting. To run a test in this mode, send the following JSON:
 
+```
+ws.on('open', () => {
+  ws.send(JSON.stringify(
+    {
+      reporter: 'basic',
+      test: 'simple'
+      monitor: {
+        cmd: 'start', 
+        delay: 1000 // in ms
+      }
+    })
+  );
+});
+```
+
+Once a monitor style test has been started, marimo will send test results to all connected WebSocket clients that have requested to receive these updates. To request these updates, a client must connect with URL query parameter "monitor" set to "true". As follows:
+
+```
+ws://server:port/?monitor=true
+```
+
+Only one test can be run per Marimo instance in this way. Future updates will allow for a series of tests to be chained together. Note that once a test has been started, it can also be stopped using the following command:
+
+```
+ws.on('open', () => {
+  ws.send(JSON.stringify(
+    {
+      reporter: 'basic',
+      test: 'simple'
+      monitor: {
+        cmd: 'stop', 
+        delay: 1000 // in ms
+      }
+    })
+  );
+});
+```
+
+An example client which implementing this feature can be seen in [browser_monitor.html](https://github.com/lawrips/marimo/blob/master/samples/browser_monitor.html)  
