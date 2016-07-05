@@ -59,18 +59,25 @@ Your test results will appear here
                 // set this - subsequent messages will be the test results themselves  
                 availableTests = JSON.parse(event.data).availableTests;
                 // populate your UX with available tests (e.g. a drop down list)
+
                 $('#testSelection').empty();
                 Object.keys(availableTests).forEach((test) => { 
                     $("#testSelection").append(
                         $("<option>").val(test).html(availableTests[test].description)
                     );
                 });
+
+                // if we also received any notice of any monitoring style tests that are currently running
+                if (JSON.parse(event.data).monitoringTests) {
+                        $('#testResults').html($('#testResults').val() + "\n" + JSON.stringify(JSON.parse(event.data).monitoringTests) );
+                }
+
             }
             else {
                 var message = JSON.parse(event.data);
                 // new test started
                 if (message[0] == 'start') {
-                    $('#testResults').html($('#testResults').val() + "\n" + `************ iteration ${++iteration} ************`)
+                    $('#testResults').html($('#testResults').val() + "\n" + `************ Start: iteration ${++iteration} ************`)
                 }
                 // any subsequent messages are the actual test results themselves - now update the UX with the results
                 if (event.data.indexOf('&#8226;') > -1) {
@@ -82,6 +89,9 @@ Your test results will appear here
                     $('#testResults').html($('#testResults').val() + "\n" + event.data );
                 }
                 $('#testResults').scrollTop($('#testResults')[0].scrollHeight);
+                if (message[0] == 'end') {
+                    $('#testResults').html($('#testResults').val() + "\n" + `************ End: iteration ${iteration} ************`)
+                }
 
             }
         };
