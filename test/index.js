@@ -176,9 +176,11 @@ describe('marimo unit tests', () => {
     });
 
     it('simulate a request to run a test, should result in success', (done) => {        
-        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
         stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname}));
-        success.should.be.equal(true);
+        // we're forking a process so give things a sec to update
+        setTimeout(() => {
+            success.should.be.equal(true);
+        }, 100);
         // reset success
         success = false;
         done();
@@ -186,20 +188,18 @@ describe('marimo unit tests', () => {
     });
 
     it('simulate a request to run a test, sending some environment variables', (done) => {        
-        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
-        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": {"myenvval":"myenvkey"}}));
-        'myenvkey'.should.be.equal(process.env[testname + '_' + 'myenvval']);
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": {"myenvkey":"myenvval"}}));
+        'myenvval'.should.be.equal(process.env['myenvkey']);
         done();        
     });
 
     it('simulate a request to run a test, sending some more complex environment variables', (done) => {        
-        // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
         let envObj = {"mystuff": 
             [{"myenvval1":"myenvkey1"},
             {"myenvval2":"myenvkey2"}]
         };
-        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": envObj}));
-        JSON.stringify(envObj.mystuff).should.be.equal(process.env[testname + '_' + 'mystuff']);
+        stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": {mystuff :JSON.stringify(envObj.mystuff)}}));
+        JSON.stringify(envObj.mystuff).should.be.equal(process.env['mystuff']);
         done();        
     });
 
@@ -207,7 +207,10 @@ describe('marimo unit tests', () => {
         // set request params so that the monitor code path is triggered
         stubs.websocket.upgradeReq.url = '/?monitor=true';
         stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname}));
-        success.should.be.equal(true);
+        // we're forking a process so give things a sec to update
+        setTimeout(() => {
+            success.should.be.equal(true);
+        }, 100);
         // todo: trigger an array of connected websockets with a single test
         done();        
     });
@@ -218,7 +221,6 @@ describe('marimo unit tests', () => {
         stubs.websocket.lastSentMessage.should.be.equal(JSON.stringify({statusCode:404}));
         done();        
     });
-
 });
 
 
