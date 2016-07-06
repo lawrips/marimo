@@ -110,7 +110,7 @@ Your test results will appear here
                 // get the test that was selected
                 test: $('#testSelection').find(":selected").val(),			
                 reporter: $('#reporterSelection').find(":selected").val(),
-                monitor: {cmd: 'start'}
+                monitor: {cmd: 'start', delay: 1000}
         }))
     }); 
 

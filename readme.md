@@ -12,6 +12,7 @@ Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to 
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
 * (NEW) Tests can be run perpetually for system monitoring scenarios 
+* (NEW) Refactored in v1.0 to execute mocha tests as forked child processes. This improves passing of environment variables and should improve stability of long running tests
 
 Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
 
@@ -269,11 +270,11 @@ ws.send(JSON.stringify(
 );
 ``` 
 
-In order to access these parameters within your mocha test, use process.env. The environment variable names will be a combination of the testname and envirnoment variable name (testname_envname). So the above example would be:
+In order to access these parameters within your mocha test, use process.env. The environment variables can now be accessed exactly as passed. For example to access the above environment variables, your tests just need to include:
 
 ```
-let appId = process.env['simple_appId'] || 'mydefaultid';
-let appName = process.env['simple_appName'] || 'mydefaultname';
+let appId = process.env['appId'];
+let appName = process.env['appName'];
 ```
 
 Note that this feature can be disabled entirely be passing a variable to the marimo constructor:

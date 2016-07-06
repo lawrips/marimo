@@ -1,8 +1,16 @@
 {
   "name": "marimo",
-  "version": "0.6.1",
+  "version": "1.0.0",
   "description": "web hosting framework for mocha",
-  "keywords":["mocha", "web sockets", "server", "websockets", "web", "ws", "hosted"],
+  "keywords": [
+    "mocha",
+    "web sockets",
+    "server",
+    "websockets",
+    "web",
+    "ws",
+    "hosted"
+  ],
   "main": "lib/index.js",
   "repository": {
     "type": "git",
@@ -18,6 +26,7 @@
     "express": "^4.13.4",
     "lodash": "^4.13.1",
     "mocha": "^2.5.3",
+    "portfinder": "^1.0.3",
     "query-string": "^4.2.1",
     "request": "^2.72.0",
     "should": "^9.0.0",
