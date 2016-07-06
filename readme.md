@@ -252,6 +252,7 @@ Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic
 Included reporters will be added regularly. Currently supported reporters include:
 * basic
 * json-stream
+* json-stream-detail (new)
 * landing (new)
 
 ## Sending parameters to tests
