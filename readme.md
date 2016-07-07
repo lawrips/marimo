@@ -160,6 +160,9 @@ let marimo = new Marimo({
   // optional timeout in milliseconds (default is 10000)
   timeout: 2000 
 
+  // optional starting port which will be used for the debugger when launching mocha (default is 12141)
+  debugPort: 11111 
+
   // optional parameter which if set to false, will ignore environment variables passed to tests (default is true)
   env: false 
 });
@@ -246,6 +249,20 @@ The parameter ‘test’ will be the name of your test file to run. When you fir
 }
 ``` 
 
+### Running multiple tests
+A comma separated list of tests will result in each test being run sequentially. This can be done as follows:
+
+```
+ws.on('open', () => {
+  ws.send(JSON.stringify(
+    {
+      reporter: 'basic',
+      test: 'simpleTest1,simpleTest2'
+    })
+  );
+});
+```
+
 ## Reporters
 Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic’. Custom reporters can be created by contributing to the marimo git repo.
 
@@ -310,7 +327,7 @@ Once a monitor style test has been started, marimo will send test results to all
 ws://server:port/?monitor=true
 ```
 
-Only one test can be run per Marimo instance in this way. Future updates will allow for a series of tests to be chained together. Note that once a test has been started, it can also be stopped using the following command:
+To monitor multiple tests, just send a comma separated list of tests as in the previous section. This will be run sequentially. Note that once a test has been started, it can also be stopped using the following command:
 
 ```
 ws.on('open', () => {
