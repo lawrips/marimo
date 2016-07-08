@@ -158,10 +158,13 @@ let marimo = new Marimo({
   directory: ‘./mypath’, 
 
   // optional timeout in milliseconds (default is 10000)
-  timeout: 2000 
+  timeout: 2000,
 
   // optional starting port which will be used for the debugger when launching mocha (default is 12141)
-  debugPort: 11111 
+  debugPort: 11111, 
+
+  // optional number of ports which will determine the port range for the debugger for mocha tests (to avoid port collisions)
+  debugPortRange: 100,
 
   // optional parameter which if set to false, will ignore environment variables passed to tests (default is true)
   env: false 

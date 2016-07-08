@@ -61,17 +61,21 @@ Your test results will appear here
                 // populate your UX with available tests (e.g. a drop down list)
 
                 $('#testSelection').empty();
+                var allTests = [];
                 Object.keys(availableTests).forEach((test) => { 
                     $("#testSelection").append(
                         $("<option>").val(test).html(availableTests[test].description)
                     );
+                    allTests.push(test);
                 });
+                $("#testSelection").append(
+                    $("<option>").val(allTests.join(',')).html('all')
+                );
 
                 // if we also received any notice of any monitoring style tests that are currently running
                 if (JSON.parse(event.data).monitoringTests) {
-                        $('#testResults').html($('#testResults').val() + "\n" + JSON.stringify(JSON.parse(event.data).monitoringTests) );
+                    $('#testResults').html($('#testResults').val() + "\n" + JSON.stringify(JSON.parse(event.data).monitoringTests) );
                 }
-
             }
             else {
                 var message = JSON.parse(event.data);
@@ -110,7 +114,7 @@ Your test results will appear here
                 // get the test that was selected
                 test: $('#testSelection').find(":selected").val(),			
                 reporter: $('#reporterSelection').find(":selected").val(),
-                monitor: {cmd: 'start', delay: 1000}
+                monitor: {cmd: 'start', delay: 10}
         }))
     }); 
 
