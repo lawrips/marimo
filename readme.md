@@ -336,7 +336,6 @@ To monitor multiple tests, just send a comma separated list of tests as in the p
 ws.on('open', () => {
   ws.send(JSON.stringify(
     {
-      reporter: 'basic',
       test: 'simple'
       monitor: {
         cmd: 'stop', 
