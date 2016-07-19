@@ -24,6 +24,7 @@
     </span>
 	<span>
         <select id="reporterSelection">
+            <option value="json-stream-detail"/>json-stream-detail</option>
             <option value="json-stream"/>json-stream</option>
         </select>
     </span>
@@ -111,10 +112,11 @@ Your test results will appear here
         $('#testResults').html(''); 
         // run the test!
         socket.send(JSON.stringify({
-                // get the test that was selected
-                test: $('#testSelection').find(":selected").val(),			
-                reporter: $('#reporterSelection').find(":selected").val(),
-                monitor: {cmd: 'start', delay: 10}
+            // get the test that was selected
+            //test: $('#testSelection').find(":selected").val(),			
+            test: 'simple,existingUser',
+            reporter: $('#reporterSelection').find(":selected").val(),
+            monitor: {cmd: 'start', delay: 1000}
         }))
     }); 
 
@@ -123,10 +125,9 @@ Your test results will appear here
         iteration = 0;
         // run the test!
         socket.send(JSON.stringify({
-                // get the test that was selected
-                test: $('#testSelection').find(":selected").val(),			
-                reporter: $('#reporterSelection').find(":selected").val(),
-                monitor: {cmd: 'stop'}
+            // get the test that was selected
+            monitor: {cmd: 'stop'},
+            test: 'simple,existingUser'
         }))
     }); 
 </script>
