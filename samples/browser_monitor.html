@@ -113,8 +113,7 @@ Your test results will appear here
         // run the test!
         socket.send(JSON.stringify({
             // get the test that was selected
-            //test: $('#testSelection').find(":selected").val(),			
-            test: 'simple,existingUser',
+            test: $('#testSelection').find(":selected").val(),			
             reporter: $('#reporterSelection').find(":selected").val(),
             monitor: {cmd: 'start', delay: 1000}
         }))
@@ -127,7 +126,7 @@ Your test results will appear here
         socket.send(JSON.stringify({
             // get the test that was selected
             monitor: {cmd: 'stop'},
-            test: 'simple,existingUser'
+            test: $('#testSelection').find(":selected").val(),			
         }))
     }); 
 </script>
