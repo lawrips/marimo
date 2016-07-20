@@ -12,7 +12,7 @@ Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to 
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
 * (NEW) Tests can be run perpetually for system monitoring scenarios 
-* (NEW) Refactored in v1.0 to execute mocha tests as forked child processes. This improves passing of environment variables and should improve stability of long running tests
+* (NEW) Refactored in v1.4 to execute mocha tests as child processes and to run in parallel. This greatly improves stabiility and options for monitoring.
 
 Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
 
@@ -336,10 +336,9 @@ To monitor multiple tests, just send a comma separated list of tests as in the p
 ws.on('open', () => {
   ws.send(JSON.stringify(
     {
-      test: 'simple'
+      test: 'simple',
       monitor: {
-        cmd: 'stop', 
-        delay: 1000 // in ms
+        cmd: 'stop'
       }
     })
   );
