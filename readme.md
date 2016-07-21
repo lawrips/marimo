@@ -5,7 +5,7 @@ marimo.listen(10001);
 ```
 
 # Features
-Marimo hosts your mocha (http://mochajs.org/) tests and makes them available to run remotely over a WebSocket. The results can then be displayed real time in a website, app or any other framework. Features include:
+Marimo hosts your tests (initially mocha - http://mochajs.org/) and makes them available to run remotely over the web via WebSockets. The results can then be displayed real time in a website, app or any other framework. Features include:
 * Standard WebSockets support, accessible via a browser, another node app or any other WebSocket client
 * Optional token based authentication (handshake over HTTP(S) and initialize over WebSocket)
 * Encryption via TLS / HTTPS
