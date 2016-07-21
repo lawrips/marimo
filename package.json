@@ -1,7 +1,7 @@
 {
   "name": "marimo",
-  "version": "1.4.0",
-  "description": "web hosting framework for mocha",
+  "version": "1.4.1",
+  "description": "run your tests on the web",
   "keywords": [
     "mocha",
     "web sockets",
