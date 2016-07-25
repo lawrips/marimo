@@ -5,13 +5,13 @@ marimo.listen(10001);
 ```
 
 # Features
-Marimo hosts your tests (initially mocha - http://mochajs.org/) and makes them available to run remotely over the web via WebSockets. The results can then be displayed real time in a website, app or any other framework. Features include:
+Marimo hosts your tests and lets you run them remotely over the web and also run them constantly for E2E system monitoring. Initial support is for Mocha (http://mochajs.org/) with more coming soon. Tests are accessed over a WebSocket and can be displayed real time in a website, app or any other framework. Features include:
 * Standard WebSockets support, accessible via a browser, another node app or any other WebSocket client
+* Tests can be run perpetually for system monitoring scenarios 
 * Optional token based authentication (handshake over HTTP(S) and initialize over WebSocket)
 * Encryption via TLS / HTTPS
 * Support for Mocha - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
-* (NEW) Tests can be run perpetually for system monitoring scenarios 
 * (NEW) Refactored in v1.4 to execute mocha tests as child processes and to run in parallel. This greatly improves stabiility and options for monitoring.
 
 Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
@@ -31,12 +31,14 @@ And results will be streamed
 
 # Quick Start
 ## Server
-1. Create a new folder and instal required modules: 
+1 . Create a new folder and install required modules: 
 ```
 npm --save install marimo should mocha
 ```
-2. Copy the above server code and save in a file (e.g. server.js). This file can also be found [here](https://github.com/lawrips/marimo/blob/master/samples/server.js): 
-3. Create a sub directory, called “resources” and create a mocha test. For example:
+
+2 . Copy the above server code and save in a file (e.g. server.js). This file can also be found [here](https://github.com/lawrips/marimo/blob/master/samples/server.js): 
+
+3 . Create a sub directory, called “resources” and create a mocha test. For example:
 
 ```
 'use strict';
@@ -52,17 +54,18 @@ describe('my amazing test suite', () => {
   });
 });
 This file can also be found [here](https://github.com/lawrips/marimo/blob/master/samples/simple.js)
-
 ```
-4. You can now run the server:
+
+4 . You can now run the server:
 ```
 node server.js
 ```
 
 ## Client
 Connect to marimo and run the above test you just created:
+
 ### Node.Js
-1. . Create a client to talk to marimo. This can be copied from the file client_noauth_.js found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js) (also pasted below)
+1 . Create a client to talk to marimo. This can be copied from the file 'client_noauth.js found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js). This is also pasted below:
 
 ```
 'use stict';
@@ -85,14 +88,14 @@ ws.on('message', (data, flags) => {
 });	
 ```
 
-2. Run the client:
+2 . Run the client:
 
 ```
 npm install ws
 node client.js
 ```
 
-3. See the results (in this case 3 lines):
+3 . See the results (in this case 3 lines):
 
 ```
 {"availableTests":["developer","flow","geocoder","simple"]}
@@ -101,7 +104,7 @@ node client.js
 ```
 
 ### Browser
-1. . Create a web based client to talk to marimo. This can be copied from the file browser.html found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.html) (also pasted below)
+1 . Create a web based client to talk to marimo. This can be copied from the file browser.html found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.html) (also pasted below)
 
 ```
 <script type="text/javascript">
@@ -306,7 +309,7 @@ let marimo = new Marimo({
 });
 ```
 
-## Monitoring style tests
+## Using Marimo for Monitoring
 The above examples show tests which are run once. Marimo can also be used to run tests perpetually to be used for monitoring / alerting. To run a test in this mode, send the following JSON:
 
 ```
@@ -324,13 +327,15 @@ ws.on('open', () => {
 });
 ```
 
-Once a monitor style test has been started, marimo will send test results to all connected WebSocket clients that have requested to receive these updates. To request these updates, a client must connect with URL query parameter "monitor" set to "true". As follows:
+Once a monitor style test has been started, marimo will send test results to all connected WebSocket clients that have requested to receive these updates.
+
+To request these updates, a client must connect with URL query parameter "monitor" set to "true". As follows:
 
 ```
 ws://server:port/?monitor=true
 ```
 
-To monitor multiple tests, just send a comma separated list of tests as in the previous section. This will be run sequentially. Note that once a test has been started, it can also be stopped using the following command:
+To monitor multiple tests, either send a comma separated list of tests (e.g. test: 'simple,complex') or send multiple requests separately (this would be preferable if you want a different delay between each test). As of 1.4.0, Marimo now supports process isolation of each test so these tests are run in parallel. Note that once a test has been started, it can also be stopped using the following command:
 
 ```
 ws.on('open', () => {
