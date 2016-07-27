@@ -73,6 +73,39 @@ describe('marimo e2e tests', () => {
         
     });
 
+    it('don\'t send any environment variables and check a test designed to read them failed', (done) => {
+        var ws = new WebSocket(`ws://localhost:13000`);        
+
+        ws.on('open', () => {
+            ws.send(JSON.stringify(
+                {
+                    reporter: 'json-stream-detail',
+                    test: 'simple'
+                })
+            );            
+        });
+
+        var started = false;
+        ws.on('message', (data, flags) => {
+            var result = JSON.parse(data);
+            if (!result.availableTests) {
+                if (!started) {
+                    result[0].should.equal('start');
+                    started = true;
+                }
+                else if (result[0] == 'end') {
+                    result[1].suites.should.equal(1);
+                    result[1].tests.should.equal(5);
+                    result[1].passes.should.be.equal(3); // should be 3 passes
+                    result[1].failures.should.be.equal(2); // should be 2 failures
+                    done();
+                }
+            }        
+        });
+        
+    });
+
+
     it('connect to web socket (auth) and check simple is in the available tests', (done) => {        
         http('http://localhost:14000/auth', {
             method: 'get',
@@ -143,10 +176,10 @@ describe('marimo e2e tests', () => {
                             }
                         })
                     );
-                    // after sending stop, wait 1.5s before completing test
+                    // after sending stop, wait 2s before completing test
                     setTimeout(() => {
                         done();
-                    }, 1500);                    
+                    }, 2000);                    
                 }
             }        
         });
