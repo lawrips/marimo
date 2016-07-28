@@ -12,7 +12,8 @@ const should = require('should'),
 const filename = 'simple.js';
 let testname = filename.slice(0,filename.length-3);
 
-const numTimes = 1000000;
+// change this to the # of times you want to run a test for (can be a v large nuber for stability tests)
+const numTimes = 10;
 
 describe('marimo e2e test that runs perpatually (to test stability)', () => {
     before('start a marimo servers ', (done) => {        

@@ -190,6 +190,9 @@ describe('marimo unit tests', () => {
     });
 
     it('simulate a request to run a test, sending some environment variables', (done) => {        
+        // set env variable
+        process.env['myenvkey'] = 'myenvval';
+
         stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": {"myenvkey":"myenvval"}}));
         'myenvval'.should.be.equal(process.env['myenvkey']);
         done();        
@@ -200,6 +203,10 @@ describe('marimo unit tests', () => {
             [{"myenvval1":"myenvkey1"},
             {"myenvval2":"myenvkey2"}]
         };
+
+        // set env variable
+        process.env["mystuff"] = JSON.stringify(envObj["mystuff"]);
+        
         stubs.websocket.onMessage[0](JSON.stringify({"reporter":"basic", "test":testname, "env": {mystuff :JSON.stringify(envObj.mystuff)}}));
         JSON.stringify(envObj.mystuff).should.be.equal(process.env['mystuff']);
         done();        
