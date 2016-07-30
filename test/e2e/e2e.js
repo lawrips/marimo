@@ -5,7 +5,7 @@ const should = require('should'),
     WebSocket = require('ws'),
     path = require('path'),
     fs = require('fs'),
-    Marimo = require('../lib/index'),
+    Marimo = require('../../lib/index'),
     http = require('request'),
     debug = require('debug')('marimo-test');
 
@@ -14,14 +14,24 @@ let testname = filename.slice(0,filename.length-3);
 
 
 describe('marimo e2e tests', () => {
+    before('start a single marimo server with an incorrect directory specified. startup should fail', (done) => {        
+
+        try {
+            let marimo = new Marimo({debugPort: 13100, directory: './afakedir'});
+        } catch (ex) {
+            should.exist(ex);
+            done(); 
+        }
+    });
+
     before('start two marimo servers. One with auth and a good directory, the other with auth and adding files manually)', (done) => {        
 
-        let marimo = new Marimo({debugPort: 13100, directory: './test'});
+        let marimo = new Marimo({debugPort: 13100, directory: './test/samples'});
         marimo.listen(13000);
 
-        let marimo_auth = new Marimo({debugPort: 14100, auth: 'password', directory: './abaddir'});
-        marimo_auth.addFile('test/simple.js');
-        marimo_auth.addFile('test/echo.json');
+        let marimo_auth = new Marimo({debugPort: 14100, auth: 'password'});
+        marimo_auth.addFile('test/samples/mocha/simple.js');
+        marimo_auth.addFile('test/samples/postman/echo.json');
         marimo_auth.listen(14000);
         done(); 
     });
@@ -34,10 +44,11 @@ describe('marimo e2e tests', () => {
 
         ws.on('message', (data, flags) => {
             if (JSON.parse(data).availableTests) {
+                console.log(data)
                 Object.keys(JSON.parse(data).availableTests).indexOf('simple').should.be.greaterThan(-1);
                 Object.keys(JSON.parse(data).availableTests).indexOf('echo').should.be.greaterThan(-1);
-                JSON.parse(data).availableTests['simple'].file.should.equal('test/simple');
-                JSON.parse(data).availableTests['echo'].file.should.equal('test/echo');
+                JSON.parse(data).availableTests['simple'].file.should.equal('test/samples/mocha/simple');
+                JSON.parse(data).availableTests['echo'].file.should.equal('test/samples/postman/echo');
             }
             else {
             }
@@ -158,8 +169,8 @@ describe('marimo e2e tests', () => {
                 if (JSON.parse(data).availableTests) {
                     Object.keys(JSON.parse(data).availableTests).indexOf('simple').should.be.greaterThan(-1);
                     Object.keys(JSON.parse(data).availableTests).indexOf('echo').should.be.greaterThan(-1);
-                    JSON.parse(data).availableTests['simple'].file.should.equal('test/simple');
-                    JSON.parse(data).availableTests['echo'].file.should.equal('test/echo');
+                    JSON.parse(data).availableTests['simple'].file.should.equal('test/samples/mocha/simple');
+                    JSON.parse(data).availableTests['echo'].file.should.equal('test/samples/postman/echo');
                 }
                 else {
                 }
@@ -168,7 +179,7 @@ describe('marimo e2e tests', () => {
         });        
     });
 
-    it('start two monitor style tests and check they ran ok 3 times', (done) => {
+    it('start two monitor style tests and check they ran ok 5 times', (done) => {
         var ws = new WebSocket(`ws://localhost:13000/?monitor=true`);        
 
         ws.on('open', () => {
@@ -191,7 +202,7 @@ describe('marimo e2e tests', () => {
         ws.on('message', (data, flags) => {
             var result = JSON.parse(data);
             if (!result.availableTests) {
-                if (counter['simple'] < 3 || counter['simpleCopy'] < 3) {
+                if (counter['simple'] < 5 || counter['simpleCopy'] < 5) {
                     if (!started) {
                         result[0].should.equal('start');
                         started = true;
@@ -214,10 +225,10 @@ describe('marimo e2e tests', () => {
                             }
                         })
                     );
-                    // after sending stop, wait 5s before completing test
+                    // after sending stop, wait a few seconds before completing test
                     setTimeout(() => {
                         done();
-                    }, 5000);                    
+                    }, 1000);                    
                 }
             }        
         });

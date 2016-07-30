@@ -137,14 +137,14 @@ let marimo = null;
 
 describe('marimo unit tests', () => {
     it('create constructor', (done) => {        
-        var Marimo = proxyquire('../lib/index', stubs);
+        var Marimo = proxyquire('../../lib/index', stubs);
         marimo = new Marimo();
 
         done();
     });
 
     it('constructor with timeout, directory, debug options and env should set options', (done) => {        
-        var Marimo = proxyquire('../lib/index', stubs);
+        var Marimo = proxyquire('../../lib/index', stubs);
         var directory = 'anotherdir';
         marimo = new Marimo({timeout: 20000, directory: './' + directory, debugPort: 2016, debugPortRange: 50, env: false});
         marimo.timeout.should.equal(20000);
@@ -155,7 +155,7 @@ describe('marimo unit tests', () => {
     });
 
     it('constructor and validate tests load', (done) => {        
-        var Marimo = proxyquire('../lib/index', stubs);
+        var Marimo = proxyquire('../../lib/index', stubs);
         marimo = new Marimo();
         
         // validate files were loaded when instantiating marimo
