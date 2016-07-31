@@ -1,6 +1,6 @@
 {
   "name": "marimo",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "run your tests on the web",
   "keywords": [
     "mocha",
