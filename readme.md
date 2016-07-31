@@ -1,8 +1,11 @@
-```
+```js
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
 ```
+
+## Postman - Coming soon!
+Postman support is coming soon to Marimo. Follow progress in the [1.5.0 branch](https://github.com/lawrips/marimo/tree/1.5.0) - feedback, issues, contributions welcome! 
 
 # Features
 Marimo hosts your tests and lets you run them remotely over the web and also run them constantly for E2E system monitoring. Initial support is for Mocha (http://mochajs.org/) with more coming soon. Tests are accessed over a WebSocket and can be displayed real time in a website, app or any other framework. Features include:
