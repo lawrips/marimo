@@ -4,21 +4,29 @@ var marimo = new Marimo();
 marimo.listen(10001); 
 ```
 
+# New in 1.5 
+Major update in 1.5 including changes:
+* Support for Postman tests (currently in beta as it relies on a beta version of Newman - not for production yet)
+* Now reads all tests recursively in the specified directory (e.g. all tests in subfolders under ./resources will be loaded at startup)
+* Tests can now be added individually (e.g. marimo.addTest('./myfolder/mytest.js')
+* Further stability improvements, bug fixe, etc
+
 # Features
-Marimo hosts your tests and lets you run them remotely over the web and also run them constantly for E2E system monitoring. Initial support is for both Mocha (http://mochajs.org/) and Postman (http://www.getpostman.com) with more coming soon. Tests are accessed over a WebSocket and can be displayed real time in a website, app or any other framework. Features include:
-* (NEW) Now in v1.5, support for Postman.
+Marimo hosts your tests and lets you run them remotely over the web and also run them constantly for E2E system monitoring.
+Initial support is for both Mocha (http://mochajs.org/) and Postman (http://www.getpostman.com) with more coming soon.
+Tests are accessed over a WebSocket and can be displayed real time in a website, app or any other framework.
+Features include:
 * Standard WebSockets support, accessible via a browser, another node app or any other WebSocket client
-* Tests can be run perpetually for system monitoring scenarios 
+* Tests can be run perpetually and their output pushed to an alerting / monitoring service for system monitoring scenarios 
 * Optional token based authentication (handshake over HTTP(S) and initialize over WebSocket)
 * Encryption via TLS / HTTPS
-* Support for Mocha and Postman (in beta) - other test frameworks coming soon
+* Support for Mocha and Postman  (beta) - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
 
 Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
 
 ```
 ws.send(JSON.stringify({
-  reporter: 'basic',
   test: 'simple'
 }));
 ```
@@ -28,22 +36,42 @@ And results will be streamed
 ✓ Test passed! [1 / 1]: "a simple test" (duration 2 ms)
 ```
 
+# Docs
+* [Quick Start](#anchor)
+	* [Server](#server)
+	* [Client](#client)
+* [Usage](#usage)
+	* [Startup](#startup)
+	* [Options](#options)
+	* [Loading Tests](#loadingtests)
+		* [Load all files at startup](#loadatstartup)
+		* [Load tests individually](#loadindividually)
+	* [Connecting to marimo](#connecting)
+		* [Clients](#clients)
+		* [Getting available tests](#availableTests)
+	* [Running tests](#runningTests)
+		* [Running Multiple Tests](#multipleTests)
+		* [Sending parameters to tests (Mocha)](#sendingParamsMocha)
+		* [Sending parameters to tests (Postman)](#sendingParamsPostman)
+	* [Using marimo for monitoring](#monitoring)
+  * [Authorization](#authorization)
+	* [Reporters](#reporters)
+	
 
-# Quick Start
-## Server
-1 . Create a new folder and install required modules: 
+# <a name=“quickstart”></a>Quick Start
+## <a name=“server”></a>Server
+1 . Create a new folder, run "npm init" to create a sample package.json and then install required modules: 
 ```
 npm --save install marimo should mocha
 ```
 
-2 . Copy the above server code and save in a file (e.g. server.js). This file can also be found [here](https://github.com/lawrips/marimo/blob/master/samples/server.js):
+2 . Create a server.js file based on [this example](https://github.com/lawrips/marimo/blob/master/samples/server.js), copied below:
 ```
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
 ```
  
-
 3 . Create a sub directory, called “resources” and create a mocha test within it. An example can be found [here](https://github.com/lawrips/marimo/blob/master/samples/simple.js), and below:
 
 ```
@@ -51,30 +79,23 @@ var should = require('should');
 
 describe('my amazing test suite', () => {
   it('a simple test', (done) => {
-    var a = 2;
-    var b = 2;
-    a.should.be.equal(b);            
-    done();
+	var a = 2;
+	var b = 2;
+	a.should.be.equal(b);            
+	done();
   });
 });
 ```
 
-4 . You can now run the server:
+4 . That's it! You can now run the server:
 ```
 node server.js
 ```
 
-## Client
-Connect to marimo and run the above test you just created:
-
-### Node.Js
-1 . Create a client to talk to marimo. This can be copied from the file 'client_noauth.js found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js).
-
-You can also use something simple like wscat:
-
-Connect:
+## <a name=“client”></a> Client
+Connect to marimo and run the above test you just created. The simplest way to get started is to use a simple a simple WebSocket client like wscat. To connect enter the following command and marimo will respond with the available tests:
 ```
-wscat -c http://localhost:10001
+wscat -c ws://localhost:10001
 
 < {"availableTests":{"simple":{"file":"resources/simple","type":"mocha","description":"my amazing test suite"}}}
 ```
@@ -92,13 +113,12 @@ Run the test by sending a simple JSON command:
 < Tests done. passes = 3, failures = 1
 ```
 
-### Browser
-1 . Create a web based client to talk to marimo. This can be copied from the file browser.html found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.html).
+You can also create a node client (or any other language) to talk to marimo. Find an example in the file client\_noauth.js found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js). 
 
+See below for more info on options.
 
-
-# Docs
-## Startup
+# <a name=“usage”></a>Usage
+## <a name=“startup”></a>Startup
 Marimo can be started with just three simple lines of code:
 
 ```
@@ -107,7 +127,7 @@ var marimo = new Marimo();
 marimo.listen(10001); 
 ```
 
-### Options
+### <a name=“options”></a> Options
 Startup options include:
 
 ```
@@ -131,117 +151,177 @@ let marimo = new Marimo({
   env: false 
 });
 ```
-## Authorization
-If a password is supplied in the constructor (previous step), this requires an authorization handshake to take place over HTTP before the WebSocket can be established. The HTTP auth request can be successfully completed as simply as:
 
-``` 
-curl -H 'authorization: basic password' http://localhost:10001/auth
+## <a name=“loadingtests”></a> Loading tests 
+In order to run a test, they must be registered with the server. Valid files which will be recognized are:
 
-ZVg1VmpHRXpIMlVCRjV3dy9KeHB0U3gvWFA4ZFkybFc3d1k1WHVTOSs2aDlTa0sxUkUraDhYaXJKQTVuNmtpSHZ0MUp1N1c5ZUpNVUkzNmEvK3FMTkE9PQL
+1. Mocha files (extension .js)
+2. Postman files and their environment resources (extension .json)
+
+There are two ways to do register test files with marimo:
+
+### <a name=“loadatstartup”></a> Load all files at startup
+If you specify the “directory” parameter in marimo's constructor, it will automatically load all tests in that folder (and its sub folders). The default directory is ‘./resources’ which does not have to exist in your server. However, if you specify a directory manually in the constructor, it must exist.
+
+Note that files must be uniquely named or the latest will overwrite. 
+```
+var Marimo = require('marimo');
+var marimo = new Marimo({‘directory’:’./myfolder’});
+marimo.listen(10001); 
 ```
 
-A successful handshake will respond with a token, which should then be passed in the WebSocket connection setup:
-
+### <a name=“loadindividually”></a> Load files individually
+You can also easily add files individually:
 ```
-wscat -c http://localhost:10001/?token=ZVg1VmpHRXpIMlVCRjV3dy9KeHB0U3gvWFA4ZFkybFc3d1k1WHVTOSs2aDlTa0sxUkUraDhYaXJKQTVuNmtpSHZ0MUp1N1c5ZUpNVUkzNmEvK3FMTkE9PQL
+var Marimo = require('marimo');
+var marimo = new Marimo();
+marimo.listen(10001); 
+marimo.addFile(‘./myfolder/mytest.js’);
+marimo.addFile(‘./myfolder/myothertest.js’);
+```
 
+Once you add a file, it becomes available to run from a client. In the above example, to run the last test that was added, simply refer to it by filename (without the .js extension):
+```
+wscat -c ws://localhost:10001
+> {"test”:”myothertest”}
+```
+
+## <a name=“connecting”></a> Connecting to marimo
+
+### <a name=“clients”></a> Clients
+It’s easy to connect to marimo by leveraging any WebSocket client or API. Here are some examples which show how to connect.
+
+wscat: 
+```
+wscat -c ws://localhost:10001
+```
+
+Node.js:
+```
+var WebSocket = require('ws');
+var ws = new WebSocket(`ws://localhost:10001`);
+
+ws.on('open', () => {
+});
+
+ws.on('message', (data, flags) => {
+	console.log(data);
+});
+```
+
+Also found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js). _
+
+Browser:
+```
+<script type="text/javascript">
+	// connect to your server running marimo 
+	socket = new WebSocket("ws://localhost:10001");
+
+	// open the socket connection
+	socket.onopen = function (event) {				
+		// raise events on incoming messages
+		socket.onmessage = function (event) {
+			console.log(event);
+		}
+	}
+</script>
+```
+
+Also found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.html).
+
+### <a name=“availableTests”></a> Getting available tests
+
+Once a client WebSocket connection has been established with marimo, the server will always first reply with information available about the server. This will be JSON in the format: ```
+{
+	“availableTests”: {…},     // a dictionary of the previously loaded tests
+	“availableEnvironments”: {…},    // a dictionary available json files that were loaded (postman specific - see later) 
+	“monitoringTests”: {…},    // a comma separated list of tests that are running in monitoring mode (if any)
+}
+```
+
+Example:
+```
+wscat -c ws://localhost:10001
 < {"availableTests":{"simple":{"file":"resources/simple","type":"mocha","description":"my amazing test suite"}}}
 ```
 
-The following shows how to connect to marimo when auth is enabled (sample is also available [here](https://github.com/lawrips/marimo/blob/master/samples/client.js)):
+These are the tests have have been loaded, and can now be run remotely. 
 
-
-## Running Tests
-Once a WebSocket connection has been made, simply send the following to initiate a test.
-
-In code (Node):
-
-```
-ws.on('open', () => {
-  ws.send(JSON.stringify(
-    {
-      reporter: 'basic',
-      test: 'simple'
-    })
-  );
-});
-```
-
-wscat:
-```
-wscat -c http://localhost:10001
-> {"test":"simple","reporter":"basic"}
-```
-
-The parameter ‘test’ will be the name of your test file to run. When you first connect to marimo, it will return back an object with the available tests that have been loaded. For example:
+## <a name=“runningTests”></a> Running Tests
+Once a WebSocket connection has been made, send a JSON object to initiate a test. These should be in the format:
 
 ```
 {
-  "availableTests":
-  {
-    "simple":
-    {
-      "type":"mocha",
-      "file":"resources/simple",
-      "description":"my amazing test suite"
-    }
-  }
+	“test”: “…”,     // name of the test you want to run 
+	“reporter”: “…”,    // optional reporter (default is “basic”)
+	“env”: {…},    // optional object with environment variables
+	“envFile”: “…”,    // optional name of an environment file you want to pass (postman only)
 }
-``` 
+```
 
-### Running multiple tests
-A comma separated list of tests will result in each test being run sequentially. This can be done as follows:
+Example with wscat:
+```
+wscat -c ws://localhost:10001
+> {"test":"simple","reporter":"basic"}
+```
 
-In code (Node):
+Example in Node.js:
 ```
 ws.on('open', () => {
   ws.send(JSON.stringify(
-    {
-      reporter: 'basic',
-      test: 'simpleTest1,simpleTest2'
-    })
+	{
+	  reporter: 'basic',  // optional reporter (see more for below)
+	  test: 'simple'   // name of the test you want to run 
+	})
   );
 });
 ```
 
+In these examples , the parameter ‘test’ will be the name of your test file to run.  This value must correspond to one of the tests returned back in the “availableTests” object when first connecting
+
+### <a name=“multipleTests”></a> Running multiple tests
+A comma separated list of tests will result in each test being run sequentially. This can be done as follows:
+
 wscat:
 ```
-wscat -c http://localhost:10001
+wscat -c ws://localhost:10001
 > {"test":"simpleTest1,simpleTest2","reporter":"basic"}
 ```
 
+Node.js:
+```
+ws.on('open', () => {
+  ws.send(JSON.stringify(
+	{
+	  reporter: 'basic',
+	  test: 'simpleTest1,simpleTest2'
+	})
+  );
+});
+```
 
-## Reporters
-Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic’. Custom reporters can be created by contributing to the marimo git repo.
+### <a name=“sendingParamsMocha”></a> Sending parameters to tests (Mocha)
+Sometimes tests will want access to environment variables. These can be sent over the WebSocket to be passed to the test at runtime. Here's an example:  
 
-Included reporters will be added regularly. Currently supported reporters include:
-* basic
-* json-stream
-* json-stream-detail (new)
-* landing (new)
+wscat:
+```
+wscat -c ws://localhost:10001
+> {"test":"simple","reporter":"basic","env":{"appId":"1234","appName":"marimo"}}
+```
 
-## Sending parameters to tests
-Optional parameters can be sent over the WebSocket to be passed to the test at runtime. Here's an example:  
-
-In code (Node):
+Node.js:
 ```
 ws.send(JSON.stringify(
   {
-    reporter: 'basic',
-    test: 'simple'
-    env: {
-      'appId': '1234', 
-      'appName': 'marimo'
-    }
+	reporter: 'basic',
+	test: 'simple'
+	env: {
+	  'appId': '1234', 
+	  'appName': 'marimo'
+	}
   })
 );
 ``` 
-wscat:
-```
-wscat -c http://localhost:10001
-> {"test":"simpleTest1,simpleTest2","reporter":"basic","env":{"appId":"1234","appName":"marimo"}}
-```
-
 
 In order to access these parameters within your mocha test, use process.env. The environment variables can now be accessed exactly as passed. For example to access the above environment variables, your tests just need to include:
 
@@ -258,28 +338,49 @@ let marimo = new Marimo({
 });
 ```
 
-## Using Marimo for Monitoring
+### <a name=“sendingParamsPostman”></a> Sending parameters to tests (Postman)
+Postman is not able to access environment variables, but can instead be passed an environment file (e.g. dev.json) which the test can make use of. These are loaded at runtime automatically if found within the specified startup directory (or loaded with marimo.addFile()). To specify the environment file for a test, just use the envFIle parameter:  
+
+wscat:
+```
+wscat -c ws://localhost:10001
+> {“test":"simple","reporter":"basic","envFile”:”dev”}
+```
+
+Node.js:
+```
+ws.send(JSON.stringify(
+  {
+	reporter: 'basic',
+	test: 'simple’,
+	envFile: “dev”
+  })
+);
+``` 
+
+## <a name=“monitoring”></a>Using Marimo for Monitoring
 The above examples show tests which are run once. Marimo can also be used to run tests perpetually to be used for monitoring / alerting. To run a test in this mode, send the following JSON:
 
-In code (Node):
+wscat:
+```
+wscat -c ws://localhost:10001?monitor=true
+> {"test":"simple","reporter":"basic","monitor":{"cmd":"start","delay":1000}}
+```
+
+Node.js:
 ```
 ws.on('open', () => {
   ws.send(JSON.stringify(
-    {
-      reporter: 'basic',
-      test: 'simple'
-      monitor: {
-        cmd: 'start', 
-        delay: 1000 // in ms
-      }
-    })
+	{
+	  reporter: 'basic',
+	  test: 'simple'
+	  monitor: {
+		cmd: 'start', 
+		delay: 1000 // in ms
+	  }
+	})
   );
 });
-```
-wscat:
-```
-wscat -c http://localhost:10001?monitor=true
-> {"test":"simple","reporter":"basic","monitor":{"cmd":"start","delay":1000}}
 ```
 
 Once a monitor style test has been started, marimo will send test results to all connected WebSocket clients that have requested to receive these updates.
@@ -290,26 +391,66 @@ To request these updates, a client must connect with URL query parameter "monito
 wscat -c http://localhost:10001?monitor=true
 ```
 
-To monitor multiple tests, either send a comma separated list of tests (e.g. test: 'simple,complex') or send multiple requests separately (this would be preferable if you want a different delay between each test). As of 1.4.0, Marimo now supports process isolation of each test so these tests are run in parallel. Note that once a test has been started, it can also be stopped using the following command:
+To monitor multiple tests, either send a comma separated list of tests (e.g. test: 'simple,complex') or send multiple requests separately (this would be preferable if you want a different delay between each test). As of > 1.4.0, Marimo now supports process isolation of each test so these tests are run in parallel. Note that once a test has been started, it can also be stopped using the following command:
 
-In code (Node):
+wscat:
+```
+wscat -c ws://localhost:10001?monitor=true
+> {"test":"simple","monitor":{"cmd":"stop"}}
+```
+
+Node.js:
 ```
 ws.on('open', () => {
   ws.send(JSON.stringify(
-    {
-      test: 'simple',
-      monitor: {
-        cmd: 'stop'
-      }
-    })
+	{
+	  test: 'simple',
+	  monitor: {
+		cmd: 'stop'
+	  }
+	})
   );
 });
 ```
 
-wscat:
+An example client which implementing this feature can be seen in [browser\_monitor.html](https://github.com/lawrips/marimo/blob/master/samples/browser_monitor.html)  _
+
+## <a name=“authorization”></a> Authorization
+If a password is supplied in the constructor (previous step), authorization will be enabled on the marimo server. This requires an authorization handshake to take place over HTTP before the WebSocket can be established. For example:
 ```
-wscat -c http://localhost:10001?monitor=true
-> {"test":"simple","monitor":{"cmd":"stop"}}
+var Marimo = require('marimo');
+var marimo = new Marimo({‘auth’:’mypassword’});
+marimo.listen(10001); 
 ```
 
-An example client which implementing this feature can be seen in [browser_monitor.html](https://github.com/lawrips/marimo/blob/master/samples/browser_monitor.html)  
+This now starts marimo with auth enabled. To authorize, first send an HTTP request:
+
+``` 
+curl -H 'authorization: basic mypassword’ http://localhost:10001/auth
+```
+
+Successful responses will return with an HTTP 200 and the body equal to a token, which will be good for the life of the marimo server. E.g.
+```
+ZVg1VmpHRXpIMlVCRjV3dy9KeHB0U3gvWFA4ZFkybFc3d1k1WHVTOSs2aDlTa0sxUkUraDhYaXJKQTVuNmtpSHZ0MUp1N1c5ZUpNVUkzNmEvK3FMTkE9PQL
+```
+
+This token can then be passed in the web socket request:
+```
+wscat -c ws://localhost:10001/?token=ZVg1VmpHRXpIMlVCRjV3dy9KeHB0U3gvWFA4ZFkybFc3d1k1WHVTOSs2aDlTa0sxUkUraDhYaXJKQTVuNmtpSHZ0MUp1N1c5ZUpNVUkzNmEvK3FMTkE9PQL
+
+< {"availableTests":{"simple":{"file":"resources/simple","type":"mocha","description":"my amazing test suite"}}}
+```
+
+The following shows how to connect to marimo when auth is enabled (sample is also available [here](https://github.com/lawrips/marimo/blob/master/samples/client.js)):
+
+## <a name=“reporters”></a> Reporters
+Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic’. Custom reporters can be created by contributing to the marimo git repo.
+
+Included reporters will be added regularly. Currently supported reporters include:
+* basic
+* json-stream
+* json-stream-detail (new)
+* landing (new)
+
+Extensibility hooks for reporters will be added soon.
+
