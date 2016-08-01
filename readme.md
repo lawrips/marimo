@@ -1,17 +1,19 @@
+# Marimo
+
 ```js
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
 ```
 
-# New in 1.5 
+## New in 1.5 
 Major update in 1.5 including changes:
 * Support for Postman tests (not for production yet as it relies on a beta version of Newman)
 * Now recursively loads all tests in the directory specified in the constuctor (by default ./resources)
 * Tests can now be added individually at runtime (e.g. marimo.addTest('./myfolder/mytest.js')
 * Further stability improvements, bug fixe, etc
 
-# Features
+## Features
 Marimo hosts your tests and lets you run them remotely over the web and also run them constantly for E2E system monitoring.
 Initial support is for both Mocha (http://mochajs.org/) and Postman (http://www.getpostman.com) with more coming soon.
 Tests are accessed over a WebSocket and can be displayed real time in a website, app or any other framework.
