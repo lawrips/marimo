@@ -6,9 +6,9 @@ marimo.listen(10001);
 
 # New in 1.5 
 Major update in 1.5 including changes:
-* Support for Postman tests (currently in beta as it relies on a beta version of Newman - not for production yet)
-* Now reads all tests recursively in the specified directory (e.g. all tests in subfolders under ./resources will be loaded at startup)
-* Tests can now be added individually (e.g. marimo.addTest('./myfolder/mytest.js')
+* Support for Postman tests (not for production yet as it relies on a beta version of Newman)
+* Now recursively loads all tests in the directory specified in the constuctor (by default ./resources)
+* Tests can now be added individually at runtime (e.g. marimo.addTest('./myfolder/mytest.js')
 * Further stability improvements, bug fixe, etc
 
 # Features
@@ -51,10 +51,11 @@ And results will be streamed
 		* [Getting available tests](#availableTests)
 	* [Running tests](#runningTests)
 		* [Running Multiple Tests](#multipleTests)
-		* [Sending parameters to tests (Mocha)](#sendingParamsMocha)
-		* [Sending parameters to tests (Postman)](#sendingParamsPostman)
+		* [Sending parameters to tests](#sendingParams)
+		* [Loading parameters ahead of time and referencing them](#loadingParams) 
+		* [Disabling the use of parameters on the serverside](#disablingParams)
 	* [Using marimo for monitoring](#monitoring)
-  * [Authorization](#authorization)
+	* [Authorization](#authorization)
 	* [Reporters](#reporters)
 	
 
@@ -189,7 +190,7 @@ wscat -c ws://localhost:10001
 ## <a name="connecting"></a>Connecting to marimo
 
 ### <a name="clients"></a>Clients
-It’s easy to connect to marimo by leveraging any WebSocket client or API. Here are some examples which show how to connect.
+Connect to marimo by with any WebSocket client or API. Here are some examples.
 
 wscat: 
 ```
@@ -234,9 +235,9 @@ Also found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.
 Once a client WebSocket connection has been established with marimo, the server will always first reply with information available about the server. This will be JSON in the format:
 ```
 {
-	"availableTests": {…},     // a dictionary of the previously loaded tests
-	"availableEnvironments": {…},    // a dictionary available json files that were loaded (postman specific - see later) 
-	"monitoringTests": {…},    // a comma separated list of tests that are running in monitoring mode (if any)
+	"availableTests": {...},     // a dictionary of the previously loaded tests
+	"availableEnvironments": {...},    // a dictionary available json files that were loaded (postman specific - see later) 
+	"monitoringTests": {...},    // a comma separated list of tests that are running in monitoring mode (if any)
 }
 ```
 
@@ -253,10 +254,9 @@ Once a WebSocket connection has been made, send a JSON object to initiate a test
 
 ```
 {
-	"test": "…",     // name of the test you want to run 
-	"reporter": "…",    // optional reporter (default is "basic")
-	"env": {…},    // optional object with environment variables
-	"envFile": "…",    // optional name of an environment file you want to pass (postman only)
+	"test": "...",     // name of the test you want to run 
+	"reporter": "...",    // optional reporter (default is "basic")
+	"env": {...}    // optional object with environment variables
 }
 ```
 
@@ -301,8 +301,12 @@ ws.on('open', () => {
 });
 ```
 
-### <a name="sendingParamsMocha"></a>Sending parameters to tests (Mocha)
-Sometimes tests will want access to environment variables. These can be sent over the WebSocket to be passed to the test at runtime. Here's an example:  
+### <a name="sendingParams"></a>Sending parameters to tests 
+Sometimes tests will require access to environment variables.
+
+These can be sent over the WebSocket and passed to the test at runtime by sending them in an object called "env".
+
+Here's an example:  
 
 wscat:
 ```
@@ -331,6 +335,78 @@ let appId = process.env['appId'];
 let appName = process.env['appName'];
 ```
 
+### <a name="loadingParams"></a>Loading parameters ahead of time and referencing them 
+
+As an alternative, "env" can also be set to a string which represents a resource file. This file is one that was previously loaded in either the marimo constructor or explicitly through the mocha.addFile() method.  
+
+This is especially useful for Postman so that you can pass a postman test a previously generated environment file.
+
+As an example, consider the following Postman env file called dev.json:
+
+```
+dev.json
+{
+	"id": "someguid",
+	"name": "dev",
+	"values": [{
+			"key": "appId",
+			"value": "1234",
+			"type": "text",
+			"enabled": true
+		}]
+}
+```
+
+To load this file and make it available to marimo, you need only include the following line in your server code:
+```
+marimo.addFile('dev.json');
+```
+
+Then upon connection to marimo via a WebSocket client, you will see "dev" listed in the availableEnvironments.
+
+```
+{
+	"availableTests": {
+		"simple":{
+			"file":"resources/simple",
+			"type":"postman",
+			"description":"my amazing test suite"
+			}
+	},
+	"availableEnvironments": 
+	{
+		"dev": {
+			"file":"dev.json",
+			"name":"dev"
+		}
+	}
+}
+```
+
+This means you can now reference this previously loaded environment file whenever you start a test:
+
+wscat:
+```
+wscat -c ws://localhost:10001
+> {"test":"simple","reporter":"basic","env":"dev"}
+```
+
+Node.js:
+```
+ws.send(JSON.stringify(
+  {
+	reporter: 'basic',
+	test: 'simple'
+	env: "dev"
+  })
+);
+```
+
+Within Postman, the value appId can be referenced by simply using {{appId}} notation.
+
+
+### <a name="disablingParams"></a>Disabling the use of parameters on the server side
+
 Note that this feature can be disabled entirely be passing a variable to the marimo constructor:
 ```
 let marimo = new Marimo({
@@ -339,25 +415,6 @@ let marimo = new Marimo({
 });
 ```
 
-### <a name="sendingParamsPostman"></a>Sending parameters to tests (Postman)
-Postman is not able to access environment variables, but can instead be passed an environment file (e.g. dev.json) which the test can make use of. These are loaded at runtime automatically if found within the specified startup directory (or loaded with marimo.addFile()). To specify the environment file for a test, just use the envFIle parameter:  
-
-wscat:
-```
-wscat -c ws://localhost:10001
-> {"test":"simple","reporter":"basic","envFile":"dev"}
-```
-
-Node.js:
-```
-ws.send(JSON.stringify(
-  {
-	reporter: 'basic',
-	test: 'simple’,
-	envFile: "dev"
-  })
-);
-``` 
 
 ## <a name="monitoring"></a>Using Marimo for Monitoring
 The above examples show tests which are run once. Marimo can also be used to run tests perpetually to be used for monitoring / alerting. To run a test in this mode, send the following JSON:
