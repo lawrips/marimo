@@ -25,7 +25,7 @@ Features include:
 * Support for Mocha and Postman  (beta) - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
 
-Once connected to a running marimo server, it’s as easy as sending a message over a WebSocket to initiate the test:
+Once connected to a running marimo server, it's as easy as sending a message over a WebSocket to initiate the test:
 
 ```js
 ws.send(JSON.stringify({
@@ -104,7 +104,7 @@ $ wscat -c ws://localhost:10001
 ```
 
 Run the test by sending a simple JSON command:
-```json
+```
 > {"test":"simple"}
 
 < Tests beginning. Count = 4
@@ -136,10 +136,10 @@ Startup options include:
 ```js
 let marimo = new Marimo({
   // optional password for an HTTP auth handshake. Will return a token which can be passed to the WebSocket (default is disabled)
-  auth: ‘my-random-password’,
+  auth: 'my-random-password',
 
-  // optional path to test files (default is ‘./resources’)		
-  directory: ‘./mypath’, 
+  // optional path to test files (default is './resources')		
+  directory: './mypath', 
 
   // optional timeout in milliseconds (default is 10000)
   timeout: 2000,
@@ -164,12 +164,12 @@ In order to run a test, they must be registered with the server. Valid files whi
 There are two ways to do register test files with marimo:
 
 ### <a name="loadatstartup"></a>Load all files at startup
-If you specify the "directory" parameter in marimo's constructor, it will automatically load all tests in that folder (and its sub folders). The default directory is ‘./resources’ which does not have to exist in your server. However, if you specify a directory manually in the constructor, it must exist.
+If you specify the "directory" parameter in marimo's constructor, it will automatically load all tests in that folder (and its sub folders). The default directory is './resources' which does not have to exist in your server. However, if you specify a directory manually in the constructor, it must exist.
 
 Note that files must be uniquely named or the latest will overwrite. 
 ```js
 var Marimo = require('marimo');
-var marimo = new Marimo({‘directory’:’./myfolder’});
+var marimo = new Marimo({'directory':'./myfolder'});
 marimo.listen(10001); 
 ```
 
@@ -179,8 +179,8 @@ You can also easily add files individually:
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
-marimo.addFile(‘./myfolder/mytest.js’);
-marimo.addFile(‘./myfolder/myothertest.js’);
+marimo.addFile('./myfolder/mytest.js');
+marimo.addFile('./myfolder/myothertest.js');
 ```
 
 Once you add a file, it becomes available to run from a client. In the above example, to run the last test that was added, simply refer to it by filename (without the .js extension):
@@ -212,7 +212,7 @@ ws.on('message', (data, flags) => {
 });
 ```
 
-Also found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js). _
+Also found [here](https://github.com/lawrips/marimo/blob/master/samples/client_noauth.js).
 
 Browser:
 ```js
@@ -280,7 +280,7 @@ ws.on('open', () => {
 });
 ```
 
-In these examples , the parameter ‘test’ will be the name of your test file to run.  This value must correspond to one of the tests returned back in the "availableTests" object when first connecting
+In these examples , the parameter 'test' will be the name of your test file to run.  This value must correspond to one of the tests returned back in the "availableTests" object when first connecting
 
 ### <a name="multipleTests"></a>Running multiple tests
 A comma separated list of tests will result in each test being run sequentially. This can be done as follows:
@@ -473,20 +473,20 @@ ws.on('open', () => {
 });
 ```
 
-An example client which implementing this feature can be seen in [browser\_monitor.html](https://github.com/lawrips/marimo/blob/master/samples/browser_monitor.html)  _
+An example client which implementing this feature can be seen in [browser\_monitor.html](https://github.com/lawrips/marimo/blob/master/samples/browser_monitor.html).
 
 ## <a name="authorization"></a>Authorization
 If a password is supplied in the constructor (previous step), authorization will be enabled on the marimo server. This requires an authorization handshake to take place over HTTP before the WebSocket can be established. For example:
 ```js
 var Marimo = require('marimo');
-var marimo = new Marimo({‘auth’:’mypassword’});
+var marimo = new Marimo({'auth':'mypassword'});
 marimo.listen(10001); 
 ```
 
 This now starts marimo with auth enabled. To authorize, first send an HTTP request:
 
 ```bash 
-$ curl -H 'authorization: basic mypassword’ http://localhost:10001/auth
+$ curl -H 'authorization: basic mypassword' http://localhost:10001/auth
 ```
 
 Successful responses will return with an HTTP 200 and the body equal to a token, which will be good for the life of the marimo server. E.g.
@@ -504,7 +504,7 @@ $ wscat -c ws://localhost:10001/?token=ZVg1VmpHRXpIMlVCRjV3dy9KeHB0U3gvWFA4ZFkyb
 The following shows how to connect to marimo when auth is enabled (sample is also available [here](https://github.com/lawrips/marimo/blob/master/samples/client.js)):
 
 ## <a name="reporters"></a>Reporters
-Marimo uses a similar reporting model to Mocha. The default reporter is ‘basic’. Custom reporters can be created by contributing to the marimo git repo.
+Marimo uses a similar reporting model to Mocha. The default reporter is 'basic'. Custom reporters can be created by contributing to the marimo git repo.
 
 Included reporters will be added regularly. Currently supported reporters include:
 * basic
