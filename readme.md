@@ -8,10 +8,10 @@ marimo.listen(10001);
 
 ## New in 1.5 
 Major update in 1.5 including changes:
-* Support for Postman tests (not for production yet as it relies on a beta version of Newman)
+* Support for Postman tests (BETA)
 * Now recursively loads all tests in the directory specified in the constuctor (by default ./resources)
-* Tests can now be added individually at runtime (e.g. marimo.addTest('./myfolder/mytest.js')
-* Further stability improvements, bug fixe, etc
+* Tests can now be added individually at runtime e.g. marimo.addTest('./myfolder/mytest.js')
+* Further stability improvements, bug fixes, etc
 
 ## Features
 Marimo hosts your tests and lets you run them remotely over the web and also run them constantly for E2E system monitoring.
@@ -53,8 +53,8 @@ And results will be streamed
 		* [Getting available tests](#availableTests)
 	* [Running tests](#runningTests)
 		* [Running Multiple Tests](#multipleTests)
-		* [Sending parameters to tests](#sendingParams)
-		* [Loading parameters ahead of time and referencing them](#loadingParams) 
+		* [Sending parameters to tests (Mocha only)](#sendingParams)
+		* [Loading parameters from a file (Mocha + Postman)](#loadingParams) 
 		* [Disabling the use of parameters on the serverside](#disablingParams)
 	* [Using marimo for monitoring](#monitoring)
 	* [Authorization](#authorization)
@@ -235,7 +235,7 @@ Also found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.
 ### <a name="availableTests"></a>Getting available tests
 
 Once a client WebSocket connection has been established with marimo, the server will always first reply with information available about the server. This will be JSON in the format:
-```json
+```
 {
 	"availableTests": {...},     // a dictionary of the previously loaded tests
 	"availableEnvironments": {...},    // a dictionary available json files that were loaded (postman specific - see later) 
@@ -254,7 +254,7 @@ These are the tests have have been loaded, and can now be run remotely.
 ## <a name="runningTests"></a>Running Tests
 Once a WebSocket connection has been made, send a JSON object to initiate a test. These should be in the format:
 
-```json
+```
 {
 	"test": "...",     // name of the test you want to run 
 	"reporter": "...",    // optional reporter (default is "basic")
@@ -303,10 +303,10 @@ ws.on('open', () => {
 });
 ```
 
-### <a name="sendingParams"></a>Sending parameters to tests 
+### <a name="sendingParams"></a>Sending parameters to tests (Mocha only)
 Sometimes tests will require access to environment variables.
 
-These can be sent over the WebSocket and passed to the test at runtime by sending them in an object called "env".
+These can be sent over the WebSocket and passed to the test at runtime by sending them in an object called "env" (note only Mocha tests can access process.env - for Postman, see the next section).
 
 Here's an example:  
 
@@ -337,7 +337,7 @@ let appId = process.env['appId'];
 let appName = process.env['appName'];
 ```
 
-### <a name="loadingParams"></a>Loading parameters ahead of time and referencing them 
+### <a name="loadingParams"></a>Loading parameters from a file (Mocha + Postman)  
 
 As an alternative, "env" can also be set to a string which represents a resource file. This file is one that was previously loaded in either the marimo constructor or explicitly through the mocha.addFile() method.  
 
