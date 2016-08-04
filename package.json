@@ -1,6 +1,6 @@
 {
   "name": "marimo",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "run your tests on the web",
   "keywords": [
     "mocha",
@@ -27,15 +27,20 @@
     "express": "^4.13.4",
     "lodash": "^4.13.1",
     "mocha": "^2.5.3",
+    "newman": "3.0.0-beta.5",
+    "newman-reporter-basic": "^0.0.2",
+    "newman-reporter-json-stream-detail": "^0.0.2",
     "portfinder": "^1.0.3",
     "query-string": "^4.2.1",
+    "recursive-readdir-sync": "^1.0.6",
     "request": "^2.72.0",
     "should": "^9.0.0",
     "uuid": "^2.0.2",
     "ws": "^1.1.0"
   },
   "devDependencies": {
-    "proxyquire": "^1.7.9"
+    "proxyquire": "^1.7.9",
+    "tap-json": "^1.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

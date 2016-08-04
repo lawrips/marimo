@@ -5,7 +5,7 @@ const should = require('should'),
     WebSocket = require('ws'),
     path = require('path'),
     fs = require('fs'),
-    Marimo = require('../lib/index'),
+    Marimo = require('../../lib/index'),
     http = require('request'),
     debug = require('debug')('marimo-test');
 
@@ -18,7 +18,7 @@ const numTimes = 10;
 describe('marimo e2e test that runs perpatually (to test stability)', () => {
     before('start a marimo servers ', (done) => {        
 
-        let marimo = new Marimo({debugPort: 15100, directory: path.dirname(fs.realpathSync(__filename))});
+        let marimo = new Marimo({debugPort: 15100, directory: './test/samples'});
         marimo.listen(15000);
         done(); 
     });

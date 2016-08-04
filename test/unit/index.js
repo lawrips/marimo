@@ -5,6 +5,7 @@ const should = require('should'),
     debug = require('debug')('marimo-test');
 
 let filename = 'simple.js';
+let dir = 'resources/';
 let testname = filename.slice(0,filename.length-3);
 
 var stubs = { 
@@ -14,6 +15,22 @@ var stubs = {
                 filter: function(callback) {
                         return [filename]
                 }
+            }
+        }
+    },
+    './modules/loaders/fileLoader': function(options) {
+        return {
+            loadTests: function() {
+                let result = {
+                    tests: {
+                    }
+                };
+
+                result.tests[testname] = {file: dir + testname};
+                return result;
+            },
+            addFile: function(file) {
+                return file;
             }
         }
     },
@@ -120,14 +137,14 @@ let marimo = null;
 
 describe('marimo unit tests', () => {
     it('create constructor', (done) => {        
-        var Marimo = proxyquire('../lib/index', stubs);
+        var Marimo = proxyquire('../../lib/index', stubs);
         marimo = new Marimo();
 
         done();
     });
 
     it('constructor with timeout, directory, debug options and env should set options', (done) => {        
-        var Marimo = proxyquire('../lib/index', stubs);
+        var Marimo = proxyquire('../../lib/index', stubs);
         var directory = 'anotherdir';
         marimo = new Marimo({timeout: 20000, directory: './' + directory, debugPort: 2016, debugPortRange: 50, env: false});
         marimo.timeout.should.equal(20000);
@@ -138,17 +155,18 @@ describe('marimo unit tests', () => {
     });
 
     it('constructor and validate tests load', (done) => {        
-        // create a stubbed mocha
-        var mocha = stubs.mocha();
-        mocha.addFile(filename);
-            
-        var Marimo = proxyquire('../lib/index', stubs);
+        var Marimo = proxyquire('../../lib/index', stubs);
         marimo = new Marimo();
         
         // validate files were loaded when instantiating marimo
-        JSON.stringify(mocha.suite.suites)
+        let expectedResult = {
+        };
+
+        expectedResult[testname] = {file: dir + testname};
+
+        JSON.stringify(marimo.tests)
         .should.be.equal(
-            JSON.stringify([{file: filename}])
+            JSON.stringify(expectedResult)
         );
 
         done();
@@ -170,7 +188,7 @@ describe('marimo unit tests', () => {
         marimo.wss.onConnection[0](stubs.websocket);
         // when a client first connects, it receives a message with the list of available tests. we'll verify it matches
         let expectedJson = {"availableTests":{}};
-        expectedJson.availableTests[testname] = {"file":"resources/" + testname};
+        expectedJson.availableTests[testname] = {"file":dir + testname};
         stubs.websocket.lastSentMessage.should.be.equal(JSON.stringify(expectedJson));
 
         done();
