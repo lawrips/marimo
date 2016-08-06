@@ -1,6 +1,6 @@
 {
   "name": "marimo",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "run your tests on the web",
   "keywords": [
     "mocha",
@@ -45,6 +45,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Lawrence Ripsher",
   "license": "MIT"
 }
