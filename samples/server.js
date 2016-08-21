@@ -9,3 +9,5 @@ let marimo = new Marimo(
 );
 
 marimo.listen(10001); 
+marimo.addFile('https://raw.githubusercontent.com/lawrips/marimo/master/test/samples/mocha/simple1.js');
+marimo.addFile('https://raw.githubusercontent.com/lawrips/marimo/master/test/samples/postman/echo.json');
