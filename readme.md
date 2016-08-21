@@ -4,13 +4,15 @@
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
+marimo.addFile('./resources/myLocalTest.js');
+marimo.addFile('http://myserver/myRemoteTest.js');
 ```
 
-## New in 1.5 
-Major update in 1.5 including changes:
-* Support for Postman tests (BETA)
-* Now recursively loads all tests in the directory specified in the constuctor (by default ./resources)
-* Tests can now be added individually at runtime e.g. marimo.addTest('./myfolder/mytest.js')
+## New in 1.6 
+New features in 1.6 including:
+* Moved off to production build of Newman (Postman runtime for Node.js)  
+* Tests can now be added from URL's (e.g. marimo.addFile('http://myserver/myRemoteMochaTest.js'))
+* Postman environment variables can be supplied via node process environment (process.env) or at runtime over the websocket 
 * Further stability improvements, bug fixes, etc
 
 ## Features
@@ -24,6 +26,8 @@ Features include:
 * Encryption via TLS / HTTPS
 * Support for Mocha and Postman  (beta) - other test frameworks coming soon
 * Extensible / customizable output via your own reporters
+* Tests can be loaded from local filesystem or remote URL's
+* Support for environment variables (either process.env or resource files)
 
 Once connected to a running marimo server, it's as easy as sending a message over a WebSocket to initiate the test:
 
@@ -59,6 +63,7 @@ And results will be streamed
 	* [Using marimo for monitoring](#monitoring)
 	* [Authorization](#authorization)
 	* [Reporters](#reporters)
+	* [logs](#logs)
 	
 
 # <a name="quickstart"></a>Quick Start
@@ -514,3 +519,16 @@ Included reporters will be added regularly. Currently supported reporters includ
 
 Extensibility hooks for reporters will be added soon.
 
+## <a name="logs"></a>Logs
+To see logs, start marimo with the following environment variable:
+
+DEBUG=marimo
+
+Now logs will be printed to stdout, e.g.:
+
+```
+Sun, 21 Aug 2016 16:29:21 GMT marimo initialize: loading test file=https://raw.githubusercontent.com/lawrips/marimo/master/test/samples/mocha/simple.js
+Sun, 21 Aug 2016 16:29:21 GMT marimo Listening on 10001
+Sun, 21 Aug 2016 16:29:21 GMT marimo initialize: mocha test .marimo//simple.js loaded
+Sun, 21 Aug 2016 16:29:21 GMT marimo initialize: loaded test descriptions
+```
