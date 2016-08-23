@@ -16,7 +16,7 @@ let testname = filename.slice(0,filename.length-3);
 const numTimes = 10;
 
 describe('marimo e2e test that runs perpatually (to test stability)', () => {
-    before('start a marimo servers ', (done) => {        
+    before('start a marimo server', (done) => {        
 
         let marimo = new Marimo({debugPort: 15100, directory: './test/samples'});
         marimo.listen(15000);
