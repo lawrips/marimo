@@ -1,0 +1,103 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Wikipedia",
+		"_postman_id": "ac34e4e2-ca5f-f829-8e13-be882e579b58",
+		"description": "Checks if Wikipedia is working",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "www.wikipedia.com",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": "tests[\"www.google.com is alive\"] = responseCode.code === 200;\n"
+					}
+				}
+			],
+			"request": {
+				"url": "https://www.wikipedia.org/",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "https://en.wikipedia.org/wiki/Node.js",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": "tests[\"check the node.js page\"] = \nresponseCode.code === 200 &&\nresponseBody.has(\"<title>Node.js - Wikipedia, the free encyclopedia</title>\");\n\n"
+					}
+				}
+			],
+			"request": {
+				"url": "https://en.wikipedia.org/wiki/Node.js",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "https://en.wikipedia.org/wiki/{{goodItem}}",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": "tests[\"check the page supplied by environment variable exists\"] = \n\nresponseCode.code === 200\n"
+					}
+				}
+			],
+			"request": {
+				"url": "https://en.wikipedia.org/wiki/{{goodItem}}",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "https://en.wikipedia.org/wiki/{{badItem}}",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": "tests[\"check the page supplied by a bad environment variable does not exist\"] = \n\nresponseCode.code === 404;\n"
+					}
+				}
+			],
+			"request": {
+				"url": "https://en.wikipedia.org/wiki/{{badItem}}",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

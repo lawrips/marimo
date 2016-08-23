@@ -14,16 +14,6 @@ let testname = filename.slice(0,filename.length-3);
 
 
 describe('marimo e2e tests', () => {
-    before('start a single marimo server with an incorrect directory specified. startup should fail', (done) => {        
-
-        try {
-            let marimo = new Marimo({debugPort: 13100, directory: './afakedir'});
-        } catch (ex) {
-            should.exist(ex);
-            done(); 
-        }
-    });
-
     before('start two marimo servers. One with auth and a good directory, the other with auth and adding files manually)', (done) => {        
 
         let marimo = new Marimo({debugPort: 13100, directory: './test/samples'});
@@ -118,38 +108,6 @@ describe('marimo e2e tests', () => {
                 }
             }        
         });        
-    });
-
-    it('don\'t send any environment variables and check a test designed to read them failed', (done) => {
-        var ws = new WebSocket(`ws://localhost:13000`);        
-
-        ws.on('open', () => {
-            ws.send(JSON.stringify(
-                {
-                    reporter: 'json-stream-detail',
-                    test: 'simple'
-                })
-            );            
-        });
-
-        var started = false;
-        ws.on('message', (data, flags) => {
-            var result = JSON.parse(data);
-            if (!result.availableTests) {
-                if (!started) {
-                    result[0].should.equal('start');
-                    started = true;
-                }
-                else if (result[0] == 'end') {
-                    result[1].suites.should.equal(1);
-                    result[1].tests.should.equal(5);
-                    result[1].passes.should.be.equal(3); // should be 3 passes
-                    result[1].failures.should.be.equal(2); // should be 2 failures
-                    done();
-                }
-            }        
-        });
-        
     });
 
 

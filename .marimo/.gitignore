@@ -1,0 +1,5 @@
+# Ignore everything in this directory. Except this file
+# This directory is used to store temporary files. 
+# It should auto clean but in some editor environments, it may not. Feel free to clean out
+*
+!.gitignore

@@ -1,0 +1,23 @@
+{
+	"id": "9fde1a0c-4be6-e78b-a30e-a6163d35edd4",
+	"name": "wikipediaEnv",
+	"values": [
+		{
+			"key": "goodItem",
+			"value": "Mocha_(JavaScript_framework)",
+			"type": "text",
+			"enabled": true
+		},
+		{
+			"key": "badItem",
+			"value": "this_item_does_not_exist",
+			"type": "text",
+			"enabled": true
+		}
+	],
+	"timestamp": 1471798838377,
+	"synced": false,
+	"syncedFilename": "",
+	"team": null,
+	"isDeleted": false
+}

@@ -9,3 +9,9 @@ let marimo = new Marimo(
 );
 
 marimo.listen(10001); 
+// get a remote mocha test
+marimo.addFile('https://raw.githubusercontent.com/lawrips/marimo/master/test/samples/mocha/simple.js');
+// get a remote postman test
+marimo.addFile('https://raw.githubusercontent.com/lawrips/marimo/1.6.0/test/samples/postman/wikipedia.json');
+// get another remote postman test 
+marimo.addFile('https://raw.githubusercontent.com/lawrips/marimo/master/test/samples/postman/echo.json');
