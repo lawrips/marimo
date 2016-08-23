@@ -1,18 +1,21 @@
 # Marimo
 
 ```js
+// start marimo
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
+
+// add some tests
 marimo.addFile('./resources/myLocalTest.js');
 marimo.addFile('http://myserver/myRemoteTest.js');
 ```
 
 ## New in 1.6 
 New features in 1.6 including:
-* Moved off to production build of Newman (Postman runtime for Node.js)  
+* Moved to production build of Newman (Postman runtime for Node.js)  
 * Tests can now be added from URL's (e.g. marimo.addFile('http://myserver/myRemoteMochaTest.js'))
-* Postman environment variables can be supplied via node process environment (process.env) or at runtime over the websocket 
+* Normalized api behavior for Postman and Mocha tests (use of environment variables, adding tests)
 * Further stability improvements, bug fixes, etc
 
 ## Features
@@ -57,8 +60,8 @@ And results will be streamed
 		* [Getting available tests](#availableTests)
 	* [Running tests](#runningTests)
 		* [Running Multiple Tests](#multipleTests)
-		* [Sending parameters to tests (Mocha only)](#sendingParams)
-		* [Loading parameters from a file (Mocha + Postman)](#loadingParams) 
+		* [Sending parameters to tests over the WebSocket](#sendingParams)
+		* [Loading parameters from a resource file](#loadingParams) 
 		* [Disabling the use of parameters on the serverside](#disablingParams)
 	* [Using marimo for monitoring](#monitoring)
 	* [Authorization](#authorization)
@@ -161,7 +164,7 @@ let marimo = new Marimo({
 ```
 
 ## <a name="loadingtests"></a>Loading tests 
-In order to run a test, they must be registered with the server. Valid files which will be recognized are:
+In order to run a test, it must be registered with the server. Valid files which will be recognized are:
 
 1. Mocha files (extension .js)
 2. Postman files and their environment resources (extension .json)
@@ -178,20 +181,28 @@ var marimo = new Marimo({'directory':'./myfolder'});
 marimo.listen(10001); 
 ```
 
+If the 'directory' option is not supplied, the server will default to './resources'.
+
 ### <a name="loadindividually"></a>Load files individually
-You can also easily add files individually:
+You can also easily add files individually, both from the local filesystem and a remote server:
+
 ```js
+// start marimo
 var Marimo = require('marimo');
 var marimo = new Marimo();
 marimo.listen(10001); 
-marimo.addFile('./myfolder/mytest.js');
-marimo.addFile('./myfolder/myothertest.js');
+
+// add a local file
+marimo.addFile('./myfolder/myLocalTest.js');
+
+// add a remote file
+marimo.addFile('http://myserver/myRemoteTest.js');
 ```
 
 Once you add a file, it becomes available to run from a client. In the above example, to run the last test that was added, simply refer to it by filename (without the .js extension):
 ```bash
 $ wscat -c ws://localhost:10001
-> {"test":"myothertest"}
+> {"test":"myRemoteTest"}
 ```
 
 ## <a name="connecting"></a>Connecting to marimo
@@ -239,7 +250,7 @@ Also found [here](https://github.com/lawrips/marimo/blob/master/samples/browser.
 
 ### <a name="availableTests"></a>Getting available tests
 
-Once a client WebSocket connection has been established with marimo, the server will always first reply with information available about the server. This will be JSON in the format:
+Once a client WebSocket connection has been established with marimo, the server will always reply with information available about the server. This will be JSON in the format:
 ```
 {
 	"availableTests": {...},     // a dictionary of the previously loaded tests
@@ -308,10 +319,10 @@ ws.on('open', () => {
 });
 ```
 
-### <a name="sendingParams"></a>Sending parameters to tests (Mocha only)
-Sometimes tests will require access to environment variables.
+### <a name="sendingParams"></a>Sending parameters to tests over the WebSocket
+Often tests will require access to environment variables.
 
-These can be sent over the WebSocket and passed to the test at runtime by sending them in an object called "env" (note only Mocha tests can access process.env - for Postman, see the next section).
+These can be sent over the WebSocket and passed to the test at runtime by sending them in an object called "env" (note as of marimo 1.6.x, both Mocha and Postman tests can accept environment varibales in the same way).
 
 Here's an example:  
 
@@ -335,20 +346,25 @@ ws.send(JSON.stringify(
 );
 ``` 
 
-In order to access these parameters within your mocha test, use process.env. The environment variables can now be accessed exactly as passed. For example to access the above environment variables, your tests just need to include:
+In order to access these parameters within your test, use either process.env (Mocha) or {{envName}} notation (Postman). The environment variables can now be accessed exactly as passed. For example to access the above environment variables, your tests just need to include:
 
+Node.js:
 ```js
 let appId = process.env['appId'];
 let appName = process.env['appName'];
 ```
 
-### <a name="loadingParams"></a>Loading parameters from a file (Mocha + Postman)  
+Postman:
+```
+{{appName}}
+{{appId}}
+```
 
-As an alternative, "env" can also be set to a string which represents a resource file. This file is one that was previously loaded in either the marimo constructor or explicitly through the mocha.addFile() method.  
+### <a name="loadingParams"></a>Loading parameters from a resource file
 
-This is especially useful for Postman so that you can pass a postman test a previously generated environment file.
+As an alternative to sending parameters over the WebSocket, parameters can be defined at coding time in a resource file and made availabel to your tests. To specify the right resources, set the "env" parameter to the name of the resource file.  
 
-As an example, consider the following Postman env file called dev.json:
+As an example, consider the following Postman env file called dev.json, which you wish to be made available to your tests:
 
 ```json
 dev.json
@@ -365,11 +381,13 @@ dev.json
 ```
 
 To load this file and make it available to marimo, you need only include the following line in your server code:
+
 ```js
-marimo.addFile('dev.json');
+marimo.addFile('dev.json'); // if you have the file available locally
+marimo.addFile('http://myserver/dev.json'); // if the file is on a remote server
 ```
 
-Then upon connection to marimo via a WebSocket client, you will see "dev" listed in the availableEnvironments.
+Then upon connection to marimo via a WebSocket client, you will see "dev" listed in the availableEnvironments value.
 
 ```json
 {
@@ -409,7 +427,7 @@ ws.send(JSON.stringify(
 );
 ```
 
-Within Postman, the value appId can be referenced by simply using {{appId}} notation.
+Then within your tests, the value "appId" can be referenced by either process.env['appId'] (Node.js) or {{appId}} (Postman).
 
 
 ### <a name="disablingParams"></a>Disabling the use of parameters on the server side
@@ -424,7 +442,7 @@ let marimo = new Marimo({
 
 
 ## <a name="monitoring"></a>Using Marimo for Monitoring
-The above examples show tests which are run once. Marimo can also be used to run tests perpetually to be used for monitoring / alerting. To run a test in this mode, send the following JSON:
+A powerful feature of Marimo is the ability to run tests perpetually for monitoring / alerting scenarios. To run a test in this mode, simply send the following JSON:
 
 wscat:
 ```bash
@@ -520,9 +538,9 @@ Included reporters will be added regularly. Currently supported reporters includ
 Extensibility hooks for reporters will be added soon.
 
 ## <a name="logs"></a>Logs
-To see logs, start marimo with the following environment variable:
+To see logs, start marimo with the following environment variable (macos):
 
-DEBUG=marimo
+export DEBUG=marimo
 
 Now logs will be printed to stdout, e.g.:
 
@@ -532,3 +550,5 @@ Sun, 21 Aug 2016 16:29:21 GMT marimo Listening on 10001
 Sun, 21 Aug 2016 16:29:21 GMT marimo initialize: mocha test .marimo//simple.js loaded
 Sun, 21 Aug 2016 16:29:21 GMT marimo initialize: loaded test descriptions
 ```
+
+ 
